@@ -1,23 +1,21 @@
 🛠️ Sistema de Chamados TI - Prefeitura de Delta
-Este sistema foi desenvolvido pela Delta Cyber Security LTDA para gerenciar e centralizar as demandas técnicas de uma prefeitura, abrangendo setores como Administração, Educação e Saúde. O foco principal é a integridade dos dados e a rastreabilidade das soluções.
+Este sistema foi desenvolvido pela Delta Cyber Security LTDA para centralizar e gerenciar chamados técnicos de diversos setores da prefeitura, como Saúde, Educação e Gabinete. O projeto prioriza a segurança da informação e a rastreabilidade das soluções.
 
-🛡️ Segurança e Integridade (Core Cybersec)
-Como um projeto de Cibersegurança, o sistema possui camadas de proteção críticas no Firebase Firestore:
+🛡️ Segurança e Integridade (Cybersec)
+O sistema utiliza o Firebase Firestore com regras de segurança rigorosas:
 
-Bloqueio de Deleção: Implementamos a regra allow delete: if false, garantindo que nenhum chamado possa ser apagado, mantendo um histórico auditável e imutável para a prefeitura.
+Bloqueio de Deleção: Implementamos allow delete: if false, garantindo que nenhum chamado seja apagado, preservando o histórico para auditoria.
 
-Validação de Dados: Todos os formulários possuem validação obrigatória de Nome e Sobre nome, seguindo as diretrizes de identificação do projeto.
+Identificação Obrigatória: O sistema exige Nome e Sobrenome para a criação de novos chamados.
 
-Proteção Global: Regras de segurança que restringem o acesso apenas às coleções autorizadas, prevenindo vazamentos de informações.
+Proteção Global: Regras que impedem acessos não autorizados a outros documentos do banco de dados.
 
-🚀 Funcionalidades
-Painel Administrativo Atualizado: Visualização imediata da descrição do problema enviada pelo usuário, facilitando o diagnóstico rápido.
+🚀 Funcionalidades Principais
+Painel Administrativo: Visualização em tempo real de novos chamados com exibição da descrição detalhada do problema.
 
-Notificações em Tempo Real: Sistema de alertas visuais (bolinha pulsante) para novas mensagens não lidas no chat.
+Chat Interno: Comunicação direta entre técnicos e usuários com notificações visuais para novas mensagens.
 
-Relatórios em PDF: Geração de relatórios mensais automáticos contendo o histórico de interações e a solução final de cada chamado.
-
-Filtros de Urgência: Organização automática por níveis de prioridade (Alta, Média e Baixa).
+Relatórios PDF: Geração de documentos com o histórico completo dos atendimentos para fins gerenciais.
 
 👥 Equipe de Desenvolvimento (Delta Cyber Security)
 Lucas - Lead Cybersecurity & Backend Architecture
@@ -28,9 +26,9 @@ Ezequias - Developer & Systems Analyst
 
 Jean - Developer
 
-💻 Tecnologias
-Frontend: HTML5, CSS3 (Glassmorphism UI) e Bootstrap 5.
+💻 Tecnologias Utilizadas
+Frontend: HTML5, CSS3 (Glassmorphism design) e Bootstrap 5.
 
 Backend: Firebase Firestore (NoSQL) para sincronização em tempo real.
 
-Bibliotecas: jsPDF e jspdf-autotable para documentação oficial.
+Bibliotecas: jsPDF e jspdf-autotable para documentação.
