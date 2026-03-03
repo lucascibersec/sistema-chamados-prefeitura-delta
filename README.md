@@ -28,6 +28,8 @@ Ezequias - Developer & Systems Analyst
 
 Jean - Developer
 
+Gustavo - Fullstack Developer
+
 💻 Tecnologias Utilizadas
 Frontend: HTML5, CSS3 (Glassmorphism UI) e Bootstrap 5.
 
