@@ -24,7 +24,7 @@ Lucas - Lead Cybersecurity & Backend Architecture
 
 Ramon - Fullstack Developer
 
-Ezequias - Developer & Systems Analyst
+Ezequias - Estudante de Sistemas de Informação pela Uniube     
 
 Jean - Developer
 
