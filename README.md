@@ -28,7 +28,7 @@ Ezequias - Estudante de Sistemas de Informação pela Uniube
 
 Jean - Developer
 
-Gustavo - Fullstack Developer
+Gustavo - Ultimo periodo em Engenharia Da Computação (Uniube)
 
 💻 Tecnologias Utilizadas
 Frontend: HTML5, CSS3 (Glassmorphism UI) e Bootstrap 5.
