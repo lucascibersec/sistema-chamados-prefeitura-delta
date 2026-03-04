@@ -29,23 +29,12 @@
         }
         .card-chamado:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(13, 110, 253, 0.3); }
         .sla-bar { height: 8px; width: 100%; position: absolute; top: 0; left: 0; border-radius: 15px 15px 0 0; }
-        .desc-box { 
-            background: #eef6ff; padding: 12px; border-radius: 8px; 
-            font-size: 0.8rem; border-left: 5px solid #0d6efd; 
-            margin: 12px 0; min-height: 60px; color: #333; line-height: 1.4;
-        }
-        .chat-box { 
-            background: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; 
-            height: 160px; overflow-y: auto; padding: 10px; margin-bottom: 12px; border-top: 3px solid #f1f3f5;
-        }
+        .desc-box { background: #eef6ff; padding: 12px; border-radius: 8px; font-size: 0.8rem; border-left: 5px solid #0d6efd; margin: 12px 0; min-height: 60px; color: #333; line-height: 1.4; }
+        .chat-box { background: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; height: 160px; overflow-y: auto; padding: 10px; margin-bottom: 12px; border-top: 3px solid #f1f3f5; }
         .msg-tec { color: #0d6efd; text-align: right; margin-bottom: 6px; font-weight: 700; border-bottom: 1px solid #f1f3f5; padding-bottom: 2px; }
         .msg-user { color: #444; text-align: left; margin-bottom: 6px; background: #f1f3f5; padding: 4px 8px; border-radius: 5px; }
         .msg-nao-lida { border-left: 4px solid #ff4c4c !important; background: rgba(255, 76, 76, 0.08) !important; font-weight: 900 !important; }
-        .notif-badge { 
-            position: absolute; top: 15px; right: 15px; background: #ff4c4c; 
-            color: white; font-size: 0.7rem; font-weight: 900; 
-            padding: 2px 8px; border-radius: 20px; animation: pulse 1.5s infinite; 
-        }
+        .notif-badge { position: absolute; top: 15px; right: 15px; background: #ff4c4c; color: white; font-size: 0.7rem; font-weight: 900; padding: 2px 8px; border-radius: 20px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .tec-resp { font-size: 0.8rem; font-weight: 900; color: #0d6efd; border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; text-transform: uppercase; }
         .btn-acao { font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
@@ -58,10 +47,10 @@
     <div class="d-flex gap-2 align-items-center">
         <select id="filtroStatus" class="form-select form-select-sm bg-dark text-white border-secondary w-auto">
             <option value="Pendentes">Pendentes (Fila Atual)</option>
-            <option value="Minha Fila">Meus Atendimentos</option>
+            <option value="Minha Fila">Meus Atendimentos (Tudo)</option>
             <option value="Abertos">Novos (Sem Técnico)</option>
             <option value="Alta">Urgência: ALTA</option>
-            <option value="Concluído">Histórico (Concluídos)</option>
+            <option value="Concluído">Histórico Geral (Concluídos)</option>
         </select>
         <button id="btnPDF" class="btn btn-sm btn-outline-info fw-bold">PDF MENSAL</button>
         <span id="tecLabel" class="badge border border-info text-white p-2"></span>
@@ -79,7 +68,7 @@
 
     const tecNome = localStorage.getItem('tecnicoAtivo');
     if(!tecNome) location.href = 'login.html';
-    document.getElementById('tecLabel').innerText = "Técnico: " + tecNome;
+    document.getElementById('tecLabel').innerText = tecNome;
 
     const firebaseConfig = {
         apiKey: "AIzaSyCpXcAHwayq8AN3VR7Sj7VYteAwSluKovo",
@@ -92,78 +81,81 @@
 
     const db = getFirestore(initializeApp(firebaseConfig));
 
-    // --- FUNÇÃO PARA CARREGAR A IMAGEM (A que deu certo!) ---
     function carregarLogo(url) {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement("canvas");
-                canvas.width = img.width;
-                canvas.height = img.height;
+                canvas.width = img.width; canvas.height = img.height;
                 const ctx = canvas.getContext("2d");
                 ctx.drawImage(img, 0, 0);
                 resolve(canvas.toDataURL("image/jpeg"));
             };
-            img.onerror = () => reject("Erro ao carregar logo.");
+            img.onerror = () => reject();
             img.src = url;
         });
     }
 
-    // --- FUNÇÃO PDF RESTAURADA COM LOGO ---
+    // --- FUNÇÃO PDF ATUALIZADA COM DATAS E HORAS ---
     document.getElementById('btnPDF').onclick = async () => {
         const { jsPDF } = window.jspdf;
-        const docPDF = new jsPDF('l', 'mm', 'a4');
+        const docPDF = new jsPDF('l', 'mm', 'a4'); 
 
         try {
             const logoData = await carregarLogo('logo.png.jpeg');
-            docPDF.addImage(logoData, 'JPEG', 15, 5, 40, 15);
-        } catch (e) { console.warn("Logo não carregada no PDF."); }
+            docPDF.addImage(logoData, 'JPEG', 14, 5, 40, 15);
+        } catch (e) {}
 
         docPDF.setFont("helvetica", "bold");
-        docPDF.setFontSize(18);
-        docPDF.text(`Relatório Detalhado TI - Delta`, 65, 15);
+        docPDF.setFontSize(16);
+        docPDF.text(`Relatório Detalhado de Atendimentos TI - Delta`, 60, 15);
         
-        docPDF.setFontSize(10);
-        docPDF.setFont("helvetica", "normal");
-        docPDF.text(`Gerado por: ${tecNome} | Equipe: Lucas, Ramon, Ezequias e Jean`, 65, 21);
-
         const q = query(collection(db, "chamados"), where("status", "==", "Concluído"));
         const snap = await getDocs(q);
-        const rows = [];
-
-        snap.forEach(d => {
+        const rows = snap.docs.map(d => {
             const c = d.data();
-            const solicitante = `${c.nome || '---'} ${c.sobrenome || ''}`.trim();
-            const historico = c.mensagens?.map(m => `[${m.data}] ${m.autor}: ${m.texto}`).join('\n') || '---';
+            const solicitante = `${c.nome || ''} ${c.sobrenome || ''}`.trim();
             
-            rows.push([
-                c.dataCriacao?.toDate().toLocaleDateString('pt-BR') || 'S/D', 
-                solicitante, 
-                c.departamento || '---',
-                c.titulo || '---', 
-                c.tecnicoResponsavel || '---', 
-                historico, 
+            // Datas formatadas
+            const aberta = c.dataCriacao?.toDate().toLocaleString('pt-BR') || '---';
+            const concluida = c.dataFinalizacao?.toDate().toLocaleString('pt-BR') || '---';
+            
+            // Formatação do histórico com data/hora de cada fala
+            const historico = c.mensagens?.map(m => `[${m.data}] ${m.autor}: ${m.texto}`).join('\n') || 'Sem histórico';
+
+            return [
+                aberta,
+                concluida,
+                solicitante,
+                c.departamento || 'TI',
+                c.titulo || 'Sem Título',
+                c.tecnicoResponsavel || '---',
+                historico,
                 c.solucao || '---'
-            ]);
+            ];
         });
 
-        docPDF.autoTable({ 
-            startY: 28, 
-            head: [['Data', 'Solicitante', 'Setor', 'Assunto', 'Técnico', 'Histórico', 'Solução']], 
-            body: rows, 
-            styles: { fontSize: 7, cellPadding: 2 }, 
-            columnStyles: { 5: { cellWidth: 80 } },
-            headStyles: { fillColor: [13, 110, 253] }
+        docPDF.autoTable({
+            startY: 28,
+            head: [['Abertura', 'Conclusão', 'Solicitante', 'Setor', 'Assunto', 'Técnico', 'Histórico das Mensagens', 'Solução Aplicada']],
+            body: rows,
+            theme: 'striped',
+            headStyles: { fillColor: [13, 110, 253], fontSize: 8 },
+            styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak' },
+            columnStyles: {
+                0: { cellWidth: 25 }, // Abertura
+                1: { cellWidth: 25 }, // Conclusão
+                2: { cellWidth: 30 }, // Solicitante
+                6: { cellWidth: 70 }, // Histórico (mais espaço para ver as horas)
+                7: { cellWidth: 40 }  // Solução
+            }
         });
 
-        docPDF.save(`Relatorio_TI_Delta_Mensal.pdf`);
+        docPDF.save(`Relatorio_TI_Delta_${new Date().toLocaleDateString('pt-BR')}.pdf`);
     };
 
-    // --- FUNÇÕES DE AÇÃO DOS CARDS (VOLTARAM!) ---
     window.capturar = async (id) => {
-        if(confirm("Deseja capturar este chamado?")) {
-            await updateDoc(doc(db, "chamados", id), { status: "Em Atendimento", tecnicoResponsavel: tecNome });
-        }
+        if(confirm("Capturar chamado?")) await updateDoc(doc(db, "chamados", id), { status: "Em Atendimento", tecnicoResponsavel: tecNome });
     };
 
     window.enviarMsg = async (id, msgsAtuais) => {
@@ -177,67 +169,75 @@
     };
 
     window.finalizar = async (id) => {
-        const sol = prompt("Solução final:");
+        const sol = prompt("Descrição da Solução:");
         if(sol) await updateDoc(doc(db, "chamados", id), { status: "Concluído", solucao: sol, dataFinalizacao: serverTimestamp() });
     };
 
-    // --- MONITORAMENTO COM TODAS AS REGRAS ORIGINAIS ---
     function monitorar() {
-        const f = document.getElementById('filtroStatus').value;
-        let q = query(collection(db, "chamados"), orderBy("dataCriacao", "desc"));
+        const filtro = document.getElementById('filtroStatus').value;
+        const q = query(collection(db, "chamados"), orderBy("dataCriacao", "desc"));
 
-        if(f === "Minha Fila") q = query(collection(db, "chamados"), where("tecnicoResponsavel", "==", tecNome), where("status", "!=", "Concluído"));
-        else if(f === "Alta") q = query(collection(db, "chamados"), where("urgencia", "==", "Alta"), where("status", "!=", "Concluído"));
-        else if(f === "Abertos") q = query(collection(db, "chamados"), where("status", "==", "Aberto"));
-        else if(f === "Pendentes") q = query(collection(db, "chamados"), where("status", "in", ["Aberto", "Em Atendimento"]));
-        else if(f === "Concluído") q = query(collection(db, "chamados"), where("status", "==", "Concluído"));
+        onSnapshot(q, (snapshot) => {
+            const grid = document.getElementById('gridChamados');
+            grid.innerHTML = '';
+            let contador = 0;
 
-        onSnapshot(q, (snap) => {
-            const grid = document.getElementById('gridChamados'); grid.innerHTML = '';
-            document.getElementById('contadorTotal').innerText = snap.size;
+            snapshot.forEach((docSnap) => {
+                const c = docSnap.data();
+                const id = docSnap.id;
+                let exibir = false;
 
-            snap.forEach(d => {
-                const c = d.data();
-                const nNaoLidas = c.mensagens?.filter(m => m.autor !== tecNome && m.autor !== "Sistema" && m.lido === false).length || 0;
-                const souDono = (c.tecnicoResponsavel === tecNome);
-                const livre = !c.tecnicoResponsavel;
+                if (filtro === "Minha Fila") {
+                    if (c.tecnicoResponsavel === tecNome) exibir = true;
+                } else if (filtro === "Alta") {
+                    if (c.urgencia === "Alta" && c.status !== "Concluído") exibir = true;
+                } else if (filtro === "Abertos") {
+                    if (!c.tecnicoResponsavel && c.status === "Aberto") exibir = true;
+                } else if (filtro === "Concluído") {
+                    if (c.status === "Concluído") exibir = true;
+                } else {
+                    if (c.status !== "Concluído") exibir = true;
+                }
 
-                grid.innerHTML += `
-                    <div class="col">
-                        <div class="card card-chamado shadow">
-                            <div class="sla-bar bg-${c.urgencia === 'Alta' ? 'danger' : (c.urgencia === 'Média' ? 'warning' : 'success')}"></div>
-                            ${nNaoLidas > 0 ? `<div class="notif-badge">${nNaoLidas} NOVA</div>` : ''}
-                            
-                            <div class="fw-bold text-primary mb-1 text-truncate">${c.titulo || 'SEM TÍTULO'}</div>
-                            <div class="small mb-1">👤 <b>${c.nome || ''} ${c.sobrenome || ''}</b></div>
-                            <div class="small text-muted mb-2">🏢 ${c.departamento || 'TI'}</div>
-                            
-                            <div class="desc-box"><strong>Descrição:</strong><br>${c.descricao || 'Sem descrição.'}</div>
-                            
-                            <div class="chat-box">
-                                ${c.mensagens?.map(m => `
-                                    <div class="${m.autor === tecNome ? 'msg-tec' : 'msg-user'} ${!m.lido && m.autor !== tecNome ? 'msg-nao-lida' : ''}">
-                                        <b>${m.autor}:</b> ${m.texto} <br> <small class="text-muted">${m.data || ''}</small>
-                                    </div>`).join('') || '---'}
+                if (exibir) {
+                    contador++;
+                    const nNaoLidas = c.mensagens?.filter(m => m.autor !== tecNome && m.autor !== "Sistema" && m.lido === false).length || 0;
+                    const souDono = (c.tecnicoResponsavel === tecNome);
+                    const livre = !c.tecnicoResponsavel;
+
+                    grid.innerHTML += `
+                        <div class="col">
+                            <div class="card card-chamado shadow">
+                                <div class="sla-bar bg-${c.urgencia === 'Alta' ? 'danger' : (c.urgencia === 'Média' ? 'warning' : 'success')}"></div>
+                                ${nNaoLidas > 0 ? `<div class="notif-badge">${nNaoLidas} NOVA</div>` : ''}
+                                <div class="fw-bold text-primary mb-1 text-truncate">${c.titulo || 'SEM TÍTULO'}</div>
+                                <div class="small mb-1">👤 <b>${c.nome || ''} ${c.sobrenome || ''}</b></div>
+                                <div class="small text-muted mb-2">🏢 ${c.departamento || 'TI'}</div>
+                                <div class="desc-box"><strong>Descrição:</strong><br>${c.descricao || 'Sem descrição.'}</div>
+                                <div class="chat-box">
+                                    ${c.mensagens?.map(m => `
+                                        <div class="${m.autor === tecNome ? 'msg-tec' : 'msg-user'} ${!m.lido && m.autor !== tecNome ? 'msg-nao-lida' : ''}">
+                                            <b>${m.autor}:</b> ${m.texto} <br> <small style="font-size:0.65rem" class="text-muted">${m.data || ''}</small>
+                                        </div>`).join('') || '---'}
+                                </div>
+                                <div class="tec-resp">Resp: ${c.tecnicoResponsavel || 'AGUARDANDO...'}</div>
+                                <div class="mt-auto">
+                                    ${livre ? 
+                                        `<button class="btn btn-primary btn-sm w-100 fw-bold btn-acao" onclick="capturar('${id}')">CAPTURAR</button>` : 
+                                        (souDono && c.status !== 'Concluído' ? 
+                                            `<div class="d-flex gap-1">
+                                                <button onclick="enviarMsg('${id}', ${JSON.stringify(c.mensagens || []).replace(/"/g, '&quot;')})" class="btn btn-info btn-sm text-white fw-bold btn-acao flex-grow-1">RESPONDER</button>
+                                                <button class="btn btn-success btn-sm fw-bold btn-acao flex-grow-1" onclick="finalizar('${id}')">FINALIZAR</button>
+                                            </div>` : 
+                                            `<div class="alert ${c.status === 'Concluído' ? 'alert-dark' : 'alert-secondary'} p-1 mb-0 text-center small fw-bold">${c.status.toUpperCase()}</div>`
+                                        )
+                                    }
+                                </div>
                             </div>
-
-                            <div class="tec-resp">Resp: ${c.tecnicoResponsavel || 'AGUARDANDO...'}</div>
-                            
-                            <div class="mt-auto">
-                                ${livre ? 
-                                    `<button class="btn btn-primary btn-sm w-100 fw-bold btn-acao" onclick="capturar('${d.id}')">CAPTURAR</button>` : 
-                                    (souDono && c.status !== 'Concluído' ? 
-                                        `<div class="d-flex gap-1">
-                                            <button onclick="enviarMsg('${d.id}', ${JSON.stringify(c.mensagens || []).replace(/"/g, '&quot;')})" class="btn btn-info btn-sm text-white fw-bold btn-acao flex-grow-1">RESPONDER</button>
-                                            <button class="btn btn-success btn-sm fw-bold btn-acao flex-grow-1" onclick="finalizar('${d.id}')">FINALIZAR</button>
-                                        </div>` : 
-                                        `<div class="alert alert-secondary p-1 mb-0 text-center small fw-bold">${c.status.toUpperCase()}</div>`
-                                    )
-                                }
-                            </div>
-                        </div>
-                    </div>`;
+                        </div>`;
+                }
             });
+            document.getElementById('contadorTotal').innerText = contador;
         });
     }
 
