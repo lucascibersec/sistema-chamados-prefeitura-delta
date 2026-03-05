@@ -1,4 +1,4 @@
-# 🛠️ AGENTE47 - Central Administrativa Delta
+# 🛠️ Central Administrativa Delta
 
 O **AGENTE47** é um ecossistema de gerenciamento de chamados de TI desenvolvido pela **Delta Cyber Security LTDA**. O sistema foi projetado para centralizar e otimizar as demandas técnicas da Prefeitura de Delta (Administração, Educação e Saúde), unindo eficiência operacional a rígidos padrões de cibersegurança.
 
