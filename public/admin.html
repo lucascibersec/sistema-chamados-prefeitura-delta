@@ -34,14 +34,14 @@
             padding: 2px 8px; border-radius: 20px; animation: pulse 1.5s infinite; 
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .desc-box { background: #eef6ff; padding: 12px; border-radius: 8px; font-size: 0.8rem; border-left: 5px solid #0d6efd; margin: 12px 0; color: #333; }
-        .solucao-box { background: #e7f5ea; padding: 12px; border-radius: 8px; font-size: 0.8rem; border-left: 5px solid #198754; margin-top: 10px; color: #155724; }
+        .desc-box { background: #eef6ff; padding: 12px; border-radius: 8px; font-size: 0.8rem; border-left: 5px solid #0d6efd; margin: 12px 0; color: #333; line-height: 1.4; }
+        .solucao-box { background: #e7f5ea; padding: 12px; border-radius: 8px; font-size: 0.8rem; border-left: 5px solid #198754; margin-top: 10px; color: #155724; font-weight: 500; }
         .chat-box { background: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; height: 160px; overflow-y: auto; padding: 10px; margin-bottom: 12px; }
-        .msg-tec { color: #0d6efd; text-align: right; margin-bottom: 6px; font-weight: 700; border-bottom: 1px solid #f1f3f5; }
+        .msg-tec { color: #0d6efd; text-align: right; margin-bottom: 6px; font-weight: 700; border-bottom: 1px solid #f1f3f5; padding-bottom: 2px; }
         .msg-user { color: #444; text-align: left; margin-bottom: 6px; background: #f1f3f5; padding: 4px 8px; border-radius: 5px; }
         .msg-nao-lida { border-left: 4px solid #ff4c4c !important; background: rgba(255, 76, 76, 0.08) !important; font-weight: 900 !important; }
         .tec-resp { font-size: 0.8rem; font-weight: 900; color: #0d6efd; border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; text-transform: uppercase; }
-        .btn-acao { font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.7rem; }
+        .btn-acao { font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.75rem; }
     </style>
 </head>
 <body>
@@ -84,7 +84,6 @@
 
     const db = getFirestore(initializeApp(firebaseConfig));
 
-    // --- FUNÇÕES DE PDF E LOGO ---
     async function carregarLogo(url) {
         return new Promise((resolve) => {
             const img = new Image();
@@ -100,38 +99,69 @@
         });
     }
 
+    // --- RELATÓRIO PDF COM DATAS SEQUENCIADAS ---
     document.getElementById('btnPDF').onclick = async () => {
         const { jsPDF } = window.jspdf;
-        const docPDF = new jsPDF('l', 'mm', 'a4');
+        const docPDF = new jsPDF('l', 'mm', 'a4'); 
+
         const logoData = await carregarLogo('logo.png.jpeg');
-        if(logoData) docPDF.addImage(logoData, 'JPEG', 15, 5, 40, 15);
+        if(logoData) docPDF.addImage(logoData, 'JPEG', 14, 5, 40, 15);
+
+        docPDF.setFont("helvetica", "bold");
+        docPDF.setFontSize(16);
+        docPDF.text(`Relatório Cronológico de Atendimentos TI - Delta`, 60, 15);
         
-        const q = query(collection(db, "chamados"), where("status", "==", "Concluído"));
+        // CORREÇÃO: Aplicamos o orderBy aqui para que o PDF saia em ordem cronológica de abertura
+        const q = query(
+            collection(db, "chamados"), 
+            where("status", "==", "Concluído"),
+            orderBy("dataCriacao", "asc") // "asc" para o mais antigo primeiro, "desc" para o mais novo primeiro
+        );
+        
         const snap = await getDocs(q);
         const rows = snap.docs.map(d => {
             const c = d.data();
-            return [c.dataCriacao?.toDate().toLocaleString('pt-BR'), c.dataFinalizacao?.toDate().toLocaleString('pt-BR'), `${c.nome} ${c.sobrenome}`, c.departamento, c.titulo, c.solucao || '---'];
+            const historico = c.mensagens?.map(m => `[${m.data}] ${m.autor}: ${m.texto}`).join('\n') || '---';
+            return [
+                c.dataCriacao?.toDate().toLocaleString('pt-BR') || '---',
+                c.dataFinalizacao?.toDate().toLocaleString('pt-BR') || '---',
+                `${c.nome || ''} ${c.sobrenome || ''}`.trim(),
+                c.departamento || 'TI',
+                c.titulo || '---',
+                c.tecnicoResponsavel || '---',
+                historico,
+                c.solucao || '---'
+            ];
         });
-        docPDF.autoTable({ startY: 28, head: [['Abertura', 'Finalização', 'Solicitante', 'Setor', 'Assunto', 'Solução']], body: rows });
-        docPDF.save(`Relatorio_TI_Delta.pdf`);
+
+        docPDF.autoTable({
+            startY: 28,
+            head: [['Abertura', 'Finalização', 'Solicitante', 'Setor', 'Assunto', 'Técnico', 'Histórico Detalhado', 'Solução']],
+            body: rows,
+            headStyles: { fillColor: [13, 110, 253], fontSize: 8 },
+            styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak' },
+            columnStyles: { 
+                0: { cellWidth: 28 }, 
+                1: { cellWidth: 28 }, 
+                6: { cellWidth: 70 }, 
+                7: { cellWidth: 40 } 
+            }
+        });
+
+        docPDF.save(`Relatorio_Cronologico_Delta.pdf`);
     };
 
-    // --- AÇÕES DO TÉCNICO ---
+    // --- AÇÕES DO SISTEMA ---
     window.capturar = async (id) => {
-        if(confirm("Capturar chamado?")) await updateDoc(doc(db, "chamados", id), { status: "Em Atendimento", tecnicoResponsavel: tecNome });
+        if(confirm("Capturar este chamado?")) await updateDoc(doc(db, "chamados", id), { status: "Em Atendimento", tecnicoResponsavel: tecNome });
     };
 
-    // NOVA FUNÇÃO: Transferir chamado
     window.transferir = async (id) => {
-        const novoTec = prompt("Digite o nome do técnico para quem deseja transferir:\n(Lucas, Ramon, Ezequias, Jean, Gustavo)");
+        const novoTec = prompt("Para quem deseja transferir?\n(Lucas, Ramon, Ezequias, Jean, Gustavo)");
         if(novoTec) {
             if(confirm(`Confirmar transferência para ${novoTec}?`)) {
-                const agora = new Date().toLocaleString('pt-BR');
-                await updateDoc(doc(db, "chamados", id), { 
-                    tecnicoResponsavel: novoTec,
-                    status: "Em Atendimento" // Garante que continue em atendimento
-                });
-                alert("Chamado transferido com sucesso!");
+                await updateDoc(doc(db, "chamados", id), { tecnicoResponsavel: novoTec });
+                alert("Chamado transferido!");
             }
         }
     };
@@ -147,8 +177,14 @@
     };
 
     window.finalizar = async (id) => {
-        const sol = prompt("Descrição da Solução:");
-        if(sol) await updateDoc(doc(db, "chamados", id), { status: "Concluído", solucao: sol, dataFinalizacao: serverTimestamp() });
+        const sol = prompt("Descrição da Solução Técnica (Obrigatório):");
+        if(sol) {
+            await updateDoc(doc(db, "chamados", id), { 
+                status: "Concluído", 
+                solucao: sol, 
+                dataFinalizacao: serverTimestamp() 
+            });
+        }
     };
 
     function monitorar() {
@@ -185,14 +221,15 @@
 
                     grid.innerHTML += `
                         <div class="col">
-                            <div class="card card-chamado shadow-sm">
+                            <div class="card card-chamado shadow">
                                 <div class="sla-bar bg-${c.urgencia === 'Alta' ? 'danger' : (c.urgencia === 'Média' ? 'warning' : 'success')}"></div>
                                 ${nNaoLidas > 0 ? `<div class="notif-badge">${nNaoLidas} NOVA</div>` : ''}
-
-                                <h6 class="fw-bold text-primary">${c.titulo}</h6>
-                                <p class="small mb-1">👤 ${c.nome} ${c.sobrenome}</p>
+                                
+                                <h6 class="fw-bold text-primary mb-1">${c.titulo || 'SEM TÍTULO'}</h6>
+                                <p class="small mb-1">👤 <b>${c.nome} ${c.sobrenome}</b></p>
                                 <p class="small text-muted mb-2">🏢 ${c.departamento}</p>
-                                <div class="desc-box p-2 mb-2 small"><strong>Problema:</strong> ${c.descricao}</div>
+                                
+                                <div class="desc-box"><strong>Problema:</strong><br>${c.descricao}</div>
                                 
                                 <div class="chat-box small">
                                     ${c.mensagens?.map(m => `
@@ -201,9 +238,14 @@
                                         </div>`).join('') || ''}
                                 </div>
 
-                                ${c.status === 'Concluído' ? `<div class="solucao-box"><strong>✅ Solução:</strong><br>${c.solucao || '---'}</div>` : ''}
+                                ${c.status === 'Concluído' ? `
+                                    <div class="solucao-box">
+                                        <strong>✅ Solução Técnica:</strong><br>${c.solucao || '---'}
+                                    </div>
+                                ` : ''}
 
-                                <div class="tec-resp">Resp: ${c.tecnicoResponsavel || 'Pendente'}</div>
+                                <div class="tec-resp">Resp: ${c.tecnicoResponsavel || 'AGUARDANDO...'}</div>
+                                
                                 <div class="mt-auto">
                                     ${livre ? 
                                         `<button class="btn btn-primary btn-sm w-100 fw-bold btn-acao" onclick="capturar('${id}')">CAPTURAR</button>` : 
