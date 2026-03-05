@@ -1,38 +1,34 @@
-🛠️ Sistema de Chamados TI - Prefeitura de Delta
-Este sistema foi desenvolvido pela Delta Cyber Security LTDA para gerenciar e centralizar as demandas técnicas de uma prefeitura, abrangendo setores como Administração, Educação e Saúde. O projeto foca em integridade de dados, transparência e comunicação em tempo real.
+# 🛠️ AGENTE47 - Central Administrativa Delta
 
-🛡️ Segurança e Integridade (Core Cybersec)
-Como um projeto focado em Cibersegurança, o sistema possui camadas de proteção críticas no Firebase Firestore:
+O **AGENTE47** é um ecossistema de gerenciamento de chamados de TI desenvolvido pela **Delta Cyber Security LTDA**. O sistema foi projetado para centralizar e otimizar as demandas técnicas da Prefeitura de Delta (Administração, Educação e Saúde), unindo eficiência operacional a rígidos padrões de cibersegurança.
 
-Bloqueio de Deleção: Implementamos a regra allow delete: if false, garantindo que nenhum chamado possa ser apagado, mantendo um histórico auditável e imutável para a prefeitura.
+## 🛡️ Segurança e Integridade (Core Cybersec)
+Como um projeto focado em **Cybersecurity**, o sistema utiliza camadas de proteção críticas no Firebase:
 
-Validação de Identidade: Todos os formulários possuem validação obrigatória de Nome e Sobrenome, garantindo a rastreabilidade de quem abriu o chamado.
+* **Imutabilidade de Dados:** Implementamos a regra `allow delete: if false`, garantindo que nenhum chamado possa ser apagado. Isso mantém um histórico auditável e 100% íntegro para a prefeitura.
+* **Rastreabilidade Total:** Validação obrigatória de **Nome e Sobrenome** em todos os formulários e registro automático de **data/hora** (timestamp) na captura e finalização dos chamados.
+* **Isolamento de Acesso:** Regras de segurança que restringem a captura e resposta apenas ao técnico autenticado no chamado.
 
-Proteção Global: Regras de segurança que restringem o acesso apenas às coleções autorizadas, prevenindo vazamentos de informações.
+## 🚀 Funcionalidades Avançadas (v2.0)
 
-🚀 Funcionalidades Principais
-Painel Administrativo: Visualização clara de chamados com exibição imediata da descrição detalhada do problema.
+* **🔄 Transferência de Chamados:** Capacidade de delegar ou transferir atendimentos entre os membros da equipe administrativa com segurança.
+* **📄 Relatórios Auditáveis em PDF:** Geração de documentos oficiais com 8 colunas detalhadas, incluindo histórico de interações e soluções técnicas.
+* **🔔 Alertas em Tempo Real:** Sistema de notificações visuais ("NOVA") e barras de SLA coloridas por urgência (Alta, Média, Baixa).
+* **✅ Base de Conhecimento:** Exibição imediata da solução aplicada nos cards concluídos, facilitando consultas futuras.
 
-Chat em Tempo Real: Sistema de mensagens entre técnico e usuário com notificações visuais de mensagens não lidas.
+## 👥 Equipe de Desenvolvimento (Delta Cyber Security)
 
-Relatórios em PDF: Geração de relatórios mensais automáticos contendo o histórico detalhado de todas as soluções aplicadas.
+* **Lucas** - Lead Cybersecurity & Backend Architecture
+* **Ramon** - Fullstack Developer
+* **Ezequias** - Sistemas de Informação (Uniube)
+* **Jean** - Developer
+* **Gustavo** - Engenharia da Computação (Uniube)
 
-Filtros Inteligentes: Organização por urgência (Alta, Média, Baixa) e status de atendimento.
+## 💻 Tecnologias Utilizadas
 
-👥 Equipe de Desenvolvimento (Delta Cyber Security)
-Lucas - Lead Cybersecurity & Backend Architecture
+* **Frontend:** HTML5, CSS3 (Glassmorphism UI) e Bootstrap 5.
+* **Backend:** Firebase Firestore (NoSQL) para sincronização Realtime.
+* **Documentação:** jsPDF e AutoTable para geração de documentos oficiais.
 
-Ramon - Fullstack Developer
-
-Ezequias - Estudante de Sistemas de Informação pela Uniube     
-
-Jean - Developer
-
-Gustavo - Ultimo periodo em Engenharia Da Computação (Uniube)
-
-💻 Tecnologias Utilizadas
-Frontend: HTML5, CSS3 (Glassmorphism UI) e Bootstrap 5.
-
-Backend: Firebase Firestore (NoSQL) para sincronização em tempo real.
-
-Bibliotecas: jsPDF e jspdf-autotable para a geração de documentos PDF oficiais.
+---
+*Gerenciado e Protegido por Delta Cyber Security LTDA.*
