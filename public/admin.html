@@ -28,25 +28,18 @@
             display: flex; flex-direction: column; border: none;
         }
         .sla-bar { height: 8px; width: 100%; position: absolute; top: 0; left: 0; border-radius: 15px 15px 0 0; }
-        
-        /* Notificação de Nova Mensagem */
         .notif-badge { 
             position: absolute; top: 15px; right: 15px; background: #ff4c4c; 
             color: white; font-size: 0.7rem; font-weight: 900; 
             padding: 2px 8px; border-radius: 20px; animation: pulse 1.5s infinite; 
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-
         .desc-box { background: #eef6ff; padding: 12px; border-radius: 8px; font-size: 0.8rem; border-left: 5px solid #0d6efd; margin: 12px 0; color: #333; }
         .solucao-box { background: #e7f5ea; padding: 12px; border-radius: 8px; font-size: 0.8rem; border-left: 5px solid #198754; margin-top: 10px; color: #155724; }
-        
         .chat-box { background: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; height: 160px; overflow-y: auto; padding: 10px; margin-bottom: 12px; }
         .msg-tec { color: #0d6efd; text-align: right; margin-bottom: 6px; font-weight: 700; border-bottom: 1px solid #f1f3f5; }
         .msg-user { color: #444; text-align: left; margin-bottom: 6px; background: #f1f3f5; padding: 4px 8px; border-radius: 5px; }
-        
-        /* Mensagens não lidas destacadas no chat */
         .msg-nao-lida { border-left: 4px solid #ff4c4c !important; background: rgba(255, 76, 76, 0.08) !important; font-weight: 900 !important; }
-
         .tec-resp { font-size: 0.8rem; font-weight: 900; color: #0d6efd; border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; text-transform: uppercase; }
     </style>
 </head>
@@ -59,6 +52,7 @@
             <option value="Pendentes">Pendentes (Fila Atual)</option>
             <option value="Minha Fila">Meus Atendimentos (Tudo)</option>
             <option value="Abertos">Novos (Sem Técnico)</option>
+            <option value="Alta">Urgência: ALTA</option>
             <option value="Concluído">Histórico Geral (Concluídos)</option>
         </select>
         <button id="btnPDF" class="btn btn-sm btn-outline-info fw-bold">PDF MENSAL</button>
@@ -90,7 +84,7 @@
     const db = getFirestore(initializeApp(firebaseConfig));
 
     function carregarLogo(url) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement("canvas");
@@ -99,34 +93,50 @@
                 ctx.drawImage(img, 0, 0);
                 resolve(canvas.toDataURL("image/jpeg"));
             };
-            img.onerror = () => reject();
+            img.onerror = () => resolve(null);
             img.src = url;
         });
     }
 
+    // --- RELATÓRIO PDF COMPLETO RESTAURADO ---
     document.getElementById('btnPDF').onclick = async () => {
         const { jsPDF } = window.jspdf;
-        const docPDF = new jsPDF('l', 'mm', 'a4');
-        try {
-            const logoData = await carregarLogo('logo.png.jpeg');
-            docPDF.addImage(logoData, 'JPEG', 15, 5, 40, 15);
-        } catch (e) {}
+        const docPDF = new jsPDF('l', 'mm', 'a4'); 
+
+        const logoData = await carregarLogo('logo.png.jpeg');
+        if(logoData) docPDF.addImage(logoData, 'JPEG', 14, 5, 40, 15);
+
+        docPDF.setFont("helvetica", "bold");
+        docPDF.setFontSize(16);
+        docPDF.text(`Relatório Detalhado de Atendimentos TI - Delta`, 60, 15);
         
         const q = query(collection(db, "chamados"), where("status", "==", "Concluído"));
         const snap = await getDocs(q);
         const rows = snap.docs.map(d => {
             const c = d.data();
+            const historico = c.mensagens?.map(m => `[${m.data}] ${m.autor}: ${m.texto}`).join('\n') || '---';
             return [
-                c.dataCriacao?.toDate().toLocaleString('pt-BR') || '',
-                c.dataFinalizacao?.toDate().toLocaleString('pt-BR') || '',
-                `${c.nome} ${c.sobrenome}`,
-                c.departamento,
-                c.titulo,
-                c.solucao || 'N/A'
+                c.dataCriacao?.toDate().toLocaleString('pt-BR') || '---',
+                c.dataFinalizacao?.toDate().toLocaleString('pt-BR') || '---',
+                `${c.nome || ''} ${c.sobrenome || ''}`.trim(),
+                c.departamento || 'TI',
+                c.titulo || '---',
+                c.tecnicoResponsavel || '---',
+                historico,
+                c.solucao || '---'
             ];
         });
-        docPDF.autoTable({ startY: 28, head: [['Abertura', 'Finalização', 'Solicitante', 'Setor', 'Assunto', 'Solução']], body: rows });
-        docPDF.save(`Relatorio_TI_Delta.pdf`);
+
+        docPDF.autoTable({
+            startY: 28,
+            head: [['Abertura', 'Conclusão', 'Solicitante', 'Setor', 'Assunto', 'Técnico', 'Histórico Detalhado', 'Solução Aplicada']],
+            body: rows,
+            headStyles: { fillColor: [13, 110, 253], fontSize: 8 },
+            styles: { fontSize: 7, cellPadding: 2 },
+            columnStyles: { 0: { cellWidth: 25 }, 1: { cellWidth: 25 }, 6: { cellWidth: 70 } }
+        });
+
+        docPDF.save(`Relatorio_Completo_Delta.pdf`);
     };
 
     window.capturar = async (id) => {
@@ -137,7 +147,6 @@
         const msg = prompt("Sua resposta:");
         if(msg) {
             const agora = new Date().toLocaleString('pt-BR');
-            // Ao responder, todas as mensagens anteriores do usuário são marcadas como lidas
             const novasMsgs = msgsAtuais.map(m => ({...m, lido: true}));
             novasMsgs.push({ autor: tecNome, texto: msg, data: agora, lido: true });
             await updateDoc(doc(db, "chamados", id), { mensagens: novasMsgs });
@@ -146,13 +155,7 @@
 
     window.finalizar = async (id) => {
         const sol = prompt("Descrição da Solução:");
-        if(sol) {
-            await updateDoc(doc(db, "chamados", id), { 
-                status: "Concluído", 
-                solucao: sol, 
-                dataFinalizacao: serverTimestamp() 
-            });
-        }
+        if(sol) await updateDoc(doc(db, "chamados", id), { status: "Concluído", solucao: sol, dataFinalizacao: serverTimestamp() });
     };
 
     function monitorar() {
@@ -181,38 +184,23 @@
 
                 if (exibir) {
                     contador++;
-                    
-                    // --- LÓGICA DE NOTIFICAÇÃO (NOVA MENSAGEM) ---
                     const nNaoLidas = c.mensagens?.filter(m => m.autor !== tecNome && m.autor !== "Sistema" && m.lido === false).length || 0;
-                    
                     const souDono = (c.tecnicoResponsavel === tecNome);
                     const livre = !c.tecnicoResponsavel;
 
                     grid.innerHTML += `
                         <div class="col">
-                            <div class="card card-chamado shadow-sm">
+                            <div class="card card-chamado shadow">
                                 <div class="sla-bar bg-${c.urgencia === 'Alta' ? 'danger' : (c.urgencia === 'Média' ? 'warning' : 'success')}"></div>
-                                
                                 ${nNaoLidas > 0 ? `<div class="notif-badge">${nNaoLidas} NOVA</div>` : ''}
-
                                 <h6 class="fw-bold text-primary">${c.titulo}</h6>
                                 <p class="small mb-1">👤 ${c.nome} ${c.sobrenome}</p>
                                 <p class="small text-muted mb-2">🏢 ${c.departamento}</p>
                                 <div class="desc-box p-2 mb-2 small"><strong>Problema:</strong> ${c.descricao}</div>
-                                
                                 <div class="chat-box small">
-                                    ${c.mensagens?.map(m => `
-                                        <div class="${m.autor === tecNome ? 'msg-tec' : 'msg-user'} ${!m.lido && m.autor !== tecNome ? 'msg-nao-lida' : ''}">
-                                            <b>${m.autor}:</b> ${m.texto}
-                                        </div>`).join('') || ''}
+                                    ${c.mensagens?.map(m => `<div class="${m.autor === tecNome ? 'msg-tec' : 'msg-user'} ${!m.lido && m.autor !== tecNome ? 'msg-nao-lida' : ''}">${m.texto}</div>`).join('') || ''}
                                 </div>
-
-                                ${c.status === 'Concluído' ? `
-                                    <div class="solucao-box">
-                                        <strong>✅ Solução Aplicada:</strong><br>${c.solucao || 'Sem descrição cadastrada.'}
-                                    </div>
-                                ` : ''}
-
+                                ${c.status === 'Concluído' ? `<div class="solucao-box"><strong>✅ Solução:</strong><br>${c.solucao || '---'}</div>` : ''}
                                 <div class="tec-resp">Resp: ${c.tecnicoResponsavel || 'Pendente'}</div>
                                 <div class="mt-auto">
                                     ${livre ? `<button class="btn btn-primary btn-sm w-100 fw-bold" onclick="capturar('${id}')">CAPTURAR</button>` : 
