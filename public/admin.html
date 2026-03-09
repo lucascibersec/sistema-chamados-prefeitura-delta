@@ -48,7 +48,6 @@
         .tec-resp { font-size: 0.8rem; font-weight: 900; color: #0d6efd; border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; text-transform: uppercase; }
         .btn-acao { font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.75rem; }
 
-        /* --- MODAL FINALIZAR --- */
         #modalFinalizar {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             background: white; color: black; padding: 30px; border-radius: 20px; 
@@ -60,7 +59,13 @@
 
 <div class="header-adm d-flex justify-content-between align-items-center">
     <h5 class="mb-0 fw-bold text-white">Gestão de Chamados 🛠️ <span id="contadorTotal" class="badge bg-primary ms-2">0</span></h5>
-    <div class="d-flex gap-2 align-items-center">
+    
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+        <div class="d-flex align-items-center gap-1">
+            <span class="small fw-bold text-white">📅 DATA:</span>
+            <input type="date" id="filtroData" class="form-control form-control-sm bg-dark text-white border-secondary w-auto">
+        </div>
+
         <select id="filtroStatus" class="form-select form-select-sm bg-dark text-white border-secondary w-auto">
             <option value="Pendentes">Pendentes (Fila Atual)</option>
             <option value="Minha Fila">Meus Atendimentos (Tudo)</option>
@@ -130,14 +135,11 @@
     document.getElementById('btnPDF').onclick = async () => {
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF('l', 'mm', 'a4'); 
-
         const logoData = await carregarLogo('logo.png.jpeg');
         if(logoData) docPDF.addImage(logoData, 'JPEG', 14, 5, 40, 15);
-
         docPDF.setFont("helvetica", "bold");
         docPDF.setFontSize(16);
         docPDF.text(`Relatório Cronológico de Atendimentos TI - Delta`, 60, 15);
-        
         const q = query(collection(db, "chamados"), where("status", "==", "Concluído"), orderBy("dataCriacao", "asc"));
         const snap = await getDocs(q);
         const rows = snap.docs.map(d => {
@@ -154,7 +156,6 @@
                 c.solucao || '---'
             ];
         });
-
         docPDF.autoTable({
             startY: 28,
             head: [['Abertura', 'Finalização', 'Solicitante', 'Setor', 'Assunto', 'Técnico', 'Histórico Detalhado', 'Solução']],
@@ -163,7 +164,6 @@
             styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak' },
             columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 28 }, 6: { cellWidth: 70 }, 7: { cellWidth: 40 } }
         });
-
         docPDF.save(`Relatorio_Cronologico_Delta.pdf`);
     };
 
@@ -201,26 +201,21 @@
         const sol = document.getElementById('solucaoTecnica').value;
         const file = document.getElementById('anexoTecnico').files[0];
         let url = "";
-
         if(!sol) return alert("Descreva a solução.");
-
         document.getElementById('btnSalvarConclusao').disabled = true;
         document.getElementById('btnSalvarConclusao').innerText = "PROCESSANDO...";
-
         try {
             if(file) {
                 const storageRef = ref(storage, `solucoes/${idEmFoco}_${Date.now()}_${file.name}`);
                 await uploadBytes(storageRef, file);
                 url = await getDownloadURL(storageRef);
             }
-
             await updateDoc(doc(db, "chamados", idEmFoco), {
                 status: "Concluído",
                 solucao: sol,
                 anexoSolucao: url,
                 dataFinalizacao: serverTimestamp()
             });
-            
             document.getElementById('modalFinalizar').style.display = 'none';
         } catch (error) {
             console.error(error);
@@ -233,6 +228,7 @@
 
     function monitorar() {
         const filtro = document.getElementById('filtroStatus').value;
+        const dataSelecionada = document.getElementById('filtroData').value;
         const q = query(collection(db, "chamados"), orderBy("dataCriacao", "desc"));
 
         onSnapshot(q, (snapshot) => {
@@ -243,6 +239,12 @@
             snapshot.forEach((docSnap) => {
                 const c = docSnap.data();
                 const id = docSnap.id;
+                
+                // DATA DE ABERTURA
+                const dataCriacao = c.dataCriacao?.toDate();
+                // USANDO LOCALES PARA EVITAR ERRO DE FUSO HORÁRIO NO INPUT
+                const dataFormatada = dataCriacao ? dataCriacao.toLocaleDateString('pt-BR').split('/').reverse().join('-') : "";
+
                 let exibir = false;
 
                 if (filtro === "Minha Fila") {
@@ -257,6 +259,11 @@
                     if (c.status !== "Concluído") exibir = true;
                 }
 
+                // CORREÇÃO: O filtro de data agora valida se coincide com a abertura
+                if (dataSelecionada !== "" && dataFormatada !== dataSelecionada) {
+                    exibir = false;
+                }
+
                 if (exibir) {
                     contador++;
                     const nNaoLidas = c.mensagens?.filter(m => m.autor !== tecNome && m.autor !== "Sistema" && m.lido === false).length || 0;
@@ -269,7 +276,10 @@
                                 <div class="sla-bar bg-${c.urgencia === 'Alta' ? 'danger' : (c.urgencia === 'Média' ? 'warning' : 'success')}"></div>
                                 ${nNaoLidas > 0 ? `<div class="notif-badge">${nNaoLidas} NOVA</div>` : ''}
                                 
-                                <h6 class="fw-bold text-primary mb-1">${c.titulo || 'SEM TÍTULO'}</h6>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="fw-bold text-primary mb-0">${c.titulo || 'SEM TÍTULO'}</h6>
+                                    <span class="badge bg-light text-dark border small">${dataCriacao ? dataCriacao.toLocaleDateString('pt-BR') : ''}</span>
+                                </div>
                                 <p class="small mb-1">👤 <b>${c.nome} ${c.sobrenome}</b></p>
                                 <p class="small text-muted mb-2">🏢 ${c.departamento}</p>
                                 
@@ -316,9 +326,10 @@
     }
 
     document.getElementById('filtroStatus').onchange = monitorar;
+    document.getElementById('filtroData').onchange = monitorar;
+    
     monitorar();
 
-    // Tornar funções acessíveis globalmente para os botões do HTML dinâmico
     window.capturar = capturar;
     window.transferir = transferir;
     window.enviarMsg = enviarMsg;
