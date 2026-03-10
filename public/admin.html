@@ -3,212 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Chamados - Central Administrativa Delta</title>
+    <title>Gestão de Chamados - Central Delta TI</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        /* --- ESTILOS GLOBAIS E BACKGROUND --- */
+        /* --- TEMA CORPORATIVO DELTA (INFRADESK STYLE) --- */
+        :root {
+            --primary-color: #1abc9c; 
+            --primary-hover: #16a085;
+            --bg-body: #f1f5f9;
+            --dark-blue: #0f172a;
+            --border-color: #cbd5e1;
+            --text-main: #334155;
+        }
+
         body { 
-            background: linear-gradient(rgba(0,0,0,0.92), rgba(0,0,0,0.92)), 
-                        url('https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover; 
-            background-attachment: fixed; 
-            color: #eee; 
-            font-size: 0.85rem; 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-size: 0.85rem;
             margin: 0;
             overflow-x: hidden;
         }
 
-        /* --- CABEÇALHO ADMINISTRATIVO --- */
+        /* --- HEADER ADMINISTRATIVO --- */
         .header-adm { 
-            background: rgba(15, 17, 20, 0.98); 
-            backdrop-filter: blur(12px); 
+            background: #ffffff; 
             padding: 15px 30px; 
             position: sticky; 
             top: 0; 
             z-index: 1000; 
-            border-bottom: 2px solid #0d6efd; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border-bottom: 3px solid var(--primary-color); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
-        /* --- CARDS DOS CHAMADOS --- */
+        .header-title { font-weight: 800; font-size: 1.2rem; color: var(--dark-blue); letter-spacing: -0.5px; }
+        .header-title span { color: var(--primary-color); }
+
+        /* --- CARDS DE CHAMADOS --- */
         .card-chamado { 
             background: white; 
             color: #222; 
-            border-radius: 15px; 
+            border-radius: 12px; 
             min-height: 650px; 
-            transition: all 0.3s ease-in-out; 
+            transition: all 0.3s ease; 
             position: relative; 
             padding: 20px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6); 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             display: flex; 
             flex-direction: column; 
-            border: none;
+            border: 1px solid var(--border-color);
         }
 
         .card-chamado:hover { 
-            transform: translateY(-10px); 
-            box-shadow: 0 15px 35px rgba(13, 110, 253, 0.3); 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
         }
 
-        .sla-bar { 
-            height: 8px; 
-            width: 100%; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            border-radius: 15px 15px 0 0; 
-        }
+        .sla-bar { height: 6px; width: 100%; position: absolute; top: 0; left: 0; border-radius: 12px 12px 0 0; }
+        .bg-urg-alta { background: #ef4444; }
+        .bg-urg-media { background: #f59e0b; }
+        .bg-urg-baixa { background: #10b981; }
 
-        /* --- NOTIFICAÇÃO DE MENSAGEM (POSIÇÃO CORRIGIDA) --- */
         .notif-badge { 
-            position: absolute; 
-            top: 45px; 
-            right: 15px; 
-            background: #ff4c4c; 
-            color: white; 
-            font-size: 0.65rem; 
-            font-weight: 900; 
-            padding: 5px 12px; 
-            border-radius: 50px; 
-            animation: pulse 1.5s infinite; 
-            z-index: 10; 
-            box-shadow: 0 4px 10px rgba(255, 76, 76, 0.4); 
-            border: 2px solid white;
+            position: absolute; top: 45px; right: 15px; 
+            background: #ff4c4c; color: white; font-size: 0.65rem; font-weight: 900; 
+            padding: 5px 12px; border-radius: 50px; animation: pulse 1.5s infinite; 
+            z-index: 10; border: 2px solid white;
         }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* --- CONTEÚDO DO CARD --- */
         .desc-box { 
-            background: #eef6ff; 
-            padding: 12px; 
-            border-radius: 8px; 
-            font-size: 0.8rem; 
-            border-left: 5px solid #0d6efd; 
-            margin: 12px 0; 
-            color: #333; 
-            line-height: 1.4;
+            background: #f8fafc; padding: 12px; border-radius: 8px; 
+            border-left: 4px solid var(--primary-color); margin: 12px 0; 
+            color: #334155; line-height: 1.4; font-size: 0.8rem;
         }
 
         .chat-box { 
-            background: #ffffff; 
-            border: 1px solid #e9ecef; 
-            border-radius: 8px; 
-            height: 180px; 
-            overflow-y: auto; 
-            padding: 10px; 
-            margin-bottom: 12px; 
-            display: flex;
-            flex-direction: column;
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; 
+            height: 180px; overflow-y: auto; padding: 10px; margin-bottom: 12px; 
+            display: flex; flex-direction: column;
         }
 
-        /* --- MENSAGENS DO CHAT COM DATA E HORA --- */
-        .msg-tec { 
-            color: #0d6efd; 
-            text-align: right; 
-            margin-bottom: 8px; 
-            padding-bottom: 4px; 
-            border-bottom: 1px solid #f1f3f5; 
-            align-self: flex-end;
-            width: 95%;
-        }
+        .msg-tec { color: var(--primary-color); text-align: right; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; align-self: flex-end; width: 95%; font-weight: 600; }
+        .msg-user { color: #444; text-align: left; margin-bottom: 8px; background: #f1f5f9; padding: 6px; border-radius: 5px; align-self: flex-start; width: 95%; }
+        .msg-data { font-size: 0.55rem; color: #94a3b8; display: block; margin-top: 2px; }
 
-        .msg-user { 
-            color: #444; 
-            text-align: left; 
-            margin-bottom: 8px; 
-            background: #f1f3f5; 
-            padding: 6px; 
-            border-radius: 5px; 
-            align-self: flex-start;
-            width: 95%;
-        }
+        .msg-nao-lida { border-left: 3px solid #ff4c4c !important; background: rgba(255, 76, 76, 0.05) !important; }
 
-        .msg-data { 
-            font-size: 0.6rem; 
-            color: #888; 
-            display: block; 
-            margin-top: 2px; 
-            font-weight: 400; 
-        }
+        .solucao-box { background: #f0fdf4; padding: 12px; border-radius: 8px; border-left: 5px solid #10b981; color: #166534; font-weight: 600; }
+        .tec-resp { font-size: 0.7rem; font-weight: 800; color: var(--primary-color); border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; text-transform: uppercase; }
 
-        .msg-nao-lida { 
-            border-left: 4px solid #ff4c4c !important; 
-            background: rgba(255, 76, 76, 0.08) !important; 
-        }
-
-        .solucao-box { 
-            background: #e7f5ea; 
-            padding: 12px; 
-            border-radius: 8px; 
-            font-size: 0.8rem; 
-            border-left: 5px solid #198754; 
-            margin-top: 10px; 
-            color: #155724; 
-            font-weight: 500; 
-        }
-
-        .tec-resp { 
-            font-size: 0.75rem; 
-            font-weight: 900; 
-            color: #0d6efd; 
-            border-top: 1px solid #eee; 
-            padding-top: 10px; 
-            margin-top: auto; 
-            text-transform: uppercase; 
-        }
-
-        /* --- MODAL E COMPONENTES --- */
+        /* --- MODAL --- */
         #modalFinalizar {
-            display: none; 
-            position: fixed; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            background: white; 
-            color: black; 
-            padding: 30px; 
-            border-radius: 20px; 
-            z-index: 9999; 
-            box-shadow: 0 0 100px #000; 
-            width: 420px;
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; padding: 30px; border-radius: 12px; z-index: 9999; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); width: 420px; border: 1px solid var(--border-color);
         }
 
-        .btn-acao { font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.75rem; }
+        .btn-acao { font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.75rem; }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #0d6efd; border-radius: 10px; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="header-adm d-flex justify-content-between align-items-center flex-wrap gap-3">
-    <h5 class="mb-0 fw-bold text-white">Gestão Delta TI 🛠️ <span id="contadorTotal" class="badge bg-primary ms-2">0</span></h5>
+    <div class="header-title">Delta <span>Cyber Management</span> <span id="contadorTotal" class="badge bg-dark ms-2">0</span></div>
     
     <div class="d-flex gap-2 align-items-center flex-wrap">
         <div class="d-flex align-items-center gap-1">
-            <span class="small fw-bold text-white">📅 DATA:</span>
-            <input type="date" id="filtroData" class="form-control form-control-sm bg-dark text-white border-secondary w-auto">
+            <span class="small fw-bold text-muted">FILTRAR DATA:</span>
+            <input type="date" id="filtroData" class="form-control form-control-sm border-secondary w-auto">
         </div>
 
-        <select id="filtroStatus" class="form-select form-select-sm bg-dark text-white border-secondary w-auto">
-            <option value="Pendentes">Pendentes (Fila Atual)</option>
-            <option value="Minha Fila">Meus Atendimentos</option>
-            <option value="Abertos">Novos (Sem Técnico)</option>
+        <select id="filtroStatus" class="form-select form-select-sm border-secondary w-auto">
+            <option value="Pendentes">Pendentes (Ativos)</option>
+            <option value="Minha Fila">Minha Fila</option>
+            <option value="Abertos">Novos Chamados</option>
             <option value="Alta">Urgência: ALTA</option>
-            <option value="Concluído">Histórico (Concluídos)</option>
+            <option value="Concluído">Histórico (Finalizados)</option>
         </select>
         
-        <button id="btnPDF" class="btn btn-sm btn-outline-info fw-bold">PDF MENSAL</button>
-        <span id="tecLabel" class="badge border border-info text-white p-2"></span>
-        <button onclick="sair()" class="btn btn-sm btn-danger fw-bold">SAIR</button>
+        <button id="btnPDF" class="btn btn-sm btn-outline-dark fw-bold">GERAR PDF MENSAL</button>
+        <span id="tecLabel" class="badge bg-white text-dark border border-secondary p-2"></span>
+        <button onclick="sair()" class="btn btn-sm btn-danger fw-bold">DESCONECTAR</button>
     </div>
 </div>
 
@@ -217,31 +142,25 @@
 </div>
 
 <div id="modalFinalizar">
-    <h5 class="fw-bold mb-3 text-dark">Concluir Chamado</h5>
-    <textarea id="solucaoTecnica" class="form-control mb-3" placeholder="O que foi feito para resolver?" rows="4"></textarea>
+    <h5 class="fw-bold mb-3 text-dark">Finalizar Atendimento</h5>
+    <textarea id="solucaoTecnica" class="form-control mb-3" placeholder="Relatório técnico da solução..." rows="4"></textarea>
     <label class="fw-bold small mb-2 text-dark">ANEXAR COMPROVANTE (OPCIONAL):</label>
     <input type="file" id="anexoTecnico" class="form-control mb-4" accept="image/*, .pdf">
     <div class="d-flex gap-2">
-        <button id="btnSalvarConclusao" class="btn btn-success flex-grow-1 fw-bold">CONCLUIR AGORA</button>
-        <button onclick="document.getElementById('modalFinalizar').style.display='none'" class="btn btn-secondary flex-grow-1">CANCELAR</button>
+        <button id="btnSalvarConclusao" class="btn btn-success flex-grow-1 btn-acao">CONCLUIR CHAMADO</button>
+        <button onclick="document.getElementById('modalFinalizar').style.display='none'" class="btn btn-light border flex-grow-1 btn-acao">VOLTAR</button>
     </div>
 </div>
 
 <script type="module">
-    // --- SEGURANÇA E SESSÃO ---
-    const tecNome = localStorage.getItem('tecnicoAtivo');
-    const sessaoAtiva = localStorage.getItem('sessaoAtiva');
-
-    if (!tecNome || sessaoAtiva !== 'true') {
-        localStorage.clear();
-        window.location.replace('login.html');
-    }
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, where, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
-    document.getElementById('tecLabel').innerText = "Técnico: " + tecNome;
+    // --- SESSÃO ---
+    const tNome = localStorage.getItem('tecnicoAtivo');
+    const sAtiva = localStorage.getItem('sessaoAtiva');
+    if (!tNome || sAtiva !== 'true') { window.location.replace('login.html'); }
 
     const firebaseConfig = {
         apiKey: "AIzaSyCpXcAHwayq8AN3VR7Sj7VYteAwSluKovo",
@@ -256,128 +175,86 @@
     const storage = getStorage(app);
     let idEmFoco = "";
 
-    // Logout
-    window.sair = () => {
-        localStorage.clear();
-        window.location.href = 'login.html';
-    };
+    document.getElementById('tecLabel').innerText = "TÉCNICO: " + tNome;
 
-    // Auxiliar para Logo no PDF
-    async function carregarLogo(url) {
-        return new Promise((resolve) => {
+    window.sair = () => { localStorage.clear(); window.location.href = 'login.html'; };
+
+    // --- RELATÓRIO PDF ---
+    async function getLogo(url) {
+        return new Promise((res) => {
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.onload = () => {
                 const canvas = document.createElement("canvas");
                 canvas.width = img.width; canvas.height = img.height;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL("image/jpeg"));
+                canvas.getContext("2d").drawImage(img, 0, 0);
+                res(canvas.toDataURL("image/jpeg"));
             };
-            img.onerror = () => resolve(null);
             img.src = url;
         });
     }
 
-    // Gerar PDF
     document.getElementById('btnPDF').onclick = async () => {
         const btn = document.getElementById('btnPDF');
         btn.disabled = true; btn.innerText = "GERANDO...";
-
         const { jsPDF } = window.jspdf;
         const docPDF = new jsPDF('l', 'mm', 'a4');
-
-        const logoData = await carregarLogo('logo.png.jpeg');
-        if(logoData) docPDF.addImage(logoData, 'JPEG', 14, 5, 40, 15);
-
-        docPDF.setFont("helvetica", "bold");
-        docPDF.setFontSize(16);
-        docPDF.text(`Relatório Cronológico Delta TI`, 60, 15);
+        const logo = await getLogo('logo.png.jpeg');
+        if(logo) docPDF.addImage(logo, 'JPEG', 14, 5, 40, 15);
+        docPDF.setFontSize(16); docPDF.text(`Relatório Delta Cyber Security`, 60, 15);
         
         const q = query(collection(db, "chamados"), where("status", "==", "Concluído"), orderBy("dataCriacao", "asc"));
         const snap = await getDocs(q);
-        
         const rows = snap.docs.map(d => {
             const c = d.data();
-            return [
-                c.dataCriacao?.toDate().toLocaleString('pt-BR') || '---',
-                c.dataFinalizacao?.toDate().toLocaleString('pt-BR') || '---',
-                `${c.nome} ${c.sobrenome}`,
-                c.departamento,
-                c.titulo,
-                c.tecnicoResponsavel || '---',
-                c.solucao || '---'
-            ];
+            return [c.dataCriacao?.toDate().toLocaleString(), c.dataFinalizacao?.toDate().toLocaleString(), `${c.nome} ${c.sobrenome}`, c.departamento, c.titulo, c.tecnicoResponsavel, c.solucao];
         });
-
-        docPDF.autoTable({
-            startY: 25,
-            head: [['Abertura', 'Finalização', 'Solicitante', 'Setor', 'Assunto', 'Técnico', 'Solução']],
-            body: rows,
-            headStyles: { fillColor: [13, 110, 253], fontSize: 9 },
-            styles: { fontSize: 8, cellPadding: 2 },
-            columnStyles: { 6: { cellWidth: 50 } }
-        });
-
-        docPDF.save(`Relatorio_Delta_${new Date().toLocaleDateString().replace(/\//g, '-')}.pdf`);
+        docPDF.autoTable({ startY: 25, head: [['Abertura', 'Fim', 'Usuário', 'Setor', 'Assunto', 'Técnico', 'Solução']], body: rows, headStyles: { fillColor: [26, 188, 156] } });
+        docPDF.save(`Delta_Report.pdf`);
         btn.disabled = false; btn.innerText = "PDF MENSAL";
     };
 
-    // Ações do Card
+    // --- OPERAÇÕES ---
     window.capturar = async (id) => {
-        if(confirm("Deseja assumir este chamado?")) {
-            await updateDoc(doc(db, "chamados", id), { status: "Em Atendimento", tecnicoResponsavel: tecNome });
-        }
+        if(confirm("Assumir este chamado?")) await updateDoc(doc(db, "chamados", id), { status: "Em Atendimento", tecnicoResponsavel: tNome });
     };
 
     window.transferir = async (id) => {
-        const novoTec = prompt("Digite o nome do técnico de destino:");
-        if(novoTec) await updateDoc(doc(db, "chamados", id), { tecnicoResponsavel: novoTec });
+        const novo = prompt("Nome do novo técnico:");
+        if(novo) await updateDoc(doc(db, "chamados", id), { tecnicoResponsavel: novo });
     };
 
     window.enviarMsg = async (id, msgsAtuais) => {
-        const msg = prompt("Sua resposta para o usuário:");
-        if(msg) {
+        const txt = prompt("Sua mensagem:");
+        if(txt) {
             const agora = new Date().toLocaleString('pt-BR');
-            const novasMsgs = (msgsAtuais || []).map(m => ({...m, lido: true}));
-            novasMsgs.push({ autor: tecNome, texto: msg, data: agora, lido: false });
-            await updateDoc(doc(db, "chamados", id), { mensagens: novasMsgs });
+            const novas = (msgsAtuais || []).map(m => ({...m, lido: true}));
+            novas.push({ autor: tNome, texto: txt, data: agora, lido: false });
+            await updateDoc(doc(db, "chamados", id), { mensagens: novas });
         }
     };
 
-    window.abrirModalFinalizar = (id) => {
-        idEmFoco = id;
-        document.getElementById('solucaoTecnica').value = "";
-        document.getElementById('modalFinalizar').style.display = 'block';
-    };
+    window.abrirModalFinalizar = (id) => { idEmFoco = id; document.getElementById('modalFinalizar').style.display = 'block'; };
 
     document.getElementById('btnSalvarConclusao').onclick = async () => {
         const sol = document.getElementById('solucaoTecnica').value;
         const file = document.getElementById('anexoTecnico').files[0];
-        if(!sol) return alert("Por favor, descreva a solução.");
-        
+        if(!sol) return alert("Descreva a solução.");
         const btn = document.getElementById('btnSalvarConclusao');
-        btn.disabled = true; btn.innerText = "PROCESSANDO...";
-
+        btn.disabled = true;
         try {
             let url = "";
             if(file) {
-                const storageRef = ref(storage, `solucoes/${idEmFoco}_${Date.now()}`);
-                await uploadBytes(storageRef, file);
-                url = await getDownloadURL(storageRef);
+                const sRef = ref(storage, `solucoes/${idEmFoco}_${Date.now()}`);
+                await uploadBytes(sRef, file);
+                url = await getDownloadURL(sRef);
             }
-            await updateDoc(doc(db, "chamados", idEmFoco), { 
-                status: "Concluído", 
-                solucao: sol, 
-                anexoSolucao: url, 
-                dataFinalizacao: serverTimestamp() 
-            });
+            await updateDoc(doc(db, "chamados", idEmFoco), { status: "Concluído", solucao: sol, anexoSolucao: url, dataFinalizacao: serverTimestamp() });
             document.getElementById('modalFinalizar').style.display = 'none';
-        } catch (e) { alert("Erro ao salvar finalização."); }
-        finally { btn.disabled = false; btn.innerText = "CONCLUIR AGORA"; }
+        } catch (e) { alert("Erro ao salvar."); } finally { btn.disabled = false; }
     };
 
-    // Monitoramento Tempo Real
+    // --- MONITORAMENTO ---
     function monitorar() {
         const filtro = document.getElementById('filtroStatus').value;
         const dataFiltro = document.getElementById('filtroData').value;
@@ -387,79 +264,52 @@
             const grid = document.getElementById('gridChamados');
             grid.innerHTML = '';
             let contador = 0;
-
             snapshot.forEach((docSnap) => {
                 const c = docSnap.data();
                 const id = docSnap.id;
-                
                 const dt = c.dataCriacao?.toDate();
-                let dtFormat = "";
-                if(dt) {
-                    const dia = String(dt.getDate()).padStart(2, '0');
-                    const mes = String(dt.getMonth() + 1).padStart(2, '0');
-                    dtFormat = `${dt.getFullYear()}-${mes}-${dia}`;
-                }
+                let dtF = dt ? `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}` : "";
 
                 let exibir = false;
-                if (filtro === "Minha Fila" && c.tecnicoResponsavel === tecNome) exibir = true;
+                if (filtro === "Minha Fila" && c.tecnicoResponsavel === tNome) exibir = true;
                 else if (filtro === "Abertos" && !c.tecnicoResponsavel && c.status === "Aberto") exibir = true;
                 else if (filtro === "Alta" && c.urgencia === "Alta" && c.status !== "Concluído") exibir = true;
                 else if (filtro === "Concluído" && c.status === "Concluído") exibir = true;
                 else if (filtro === "Pendentes" && c.status !== "Concluído") exibir = true;
-
-                if (dataFiltro !== "" && dtFormat !== dataFiltro) exibir = false;
+                if (dataFiltro && dtF !== dataFiltro) exibir = false;
 
                 if (exibir) {
                     contador++;
-                    const nLidas = (c.mensagens || []).filter(m => m.autor !== tecNome && m.autor !== "Sistema" && !m.lido).length || 0;
-                    
+                    const nL = (c.mensagens || []).filter(m => m.autor !== tNome && m.autor !== "Sistema" && !m.lido).length;
                     grid.innerHTML += `
                         <div class="col">
-                            <div class="card card-chamado shadow">
-                                <div class="sla-bar bg-${c.urgencia === 'Alta' ? 'danger' : (c.urgencia === 'Média' ? 'warning' : 'primary')}"></div>
-                                ${nLidas > 0 ? `<div class="notif-badge">${nLidas} NOVA</div>` : ''}
-                                
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <h6 class="fw-bold text-primary mb-0">${c.titulo || 'SEM TÍTULO'}</h6>
-                                    <span class="badge bg-light text-dark border small">${dt ? dt.toLocaleDateString('pt-BR') : ''}</span>
+                            <div class="card card-chamado">
+                                <div class="sla-bar bg-urg-${c.urgencia.toLowerCase()}"></div>
+                                ${nL > 0 ? `<div class="notif-badge">${nL} MSG</div>` : ''}
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="fw-bold text-dark mb-0">${c.titulo}</h6>
+                                    <span class="badge bg-light text-dark border small">${dt ? dt.toLocaleDateString() : ''}</span>
                                 </div>
                                 <p class="small mb-1">👤 <b>${c.nome} ${c.sobrenome}</b></p>
                                 <p class="small text-muted mb-2">🏢 ${c.departamento}</p>
-                                
-                                <div class="desc-box"><strong>PROBLEMA:</strong><br>${c.descricao}</div>
-                                
-                                ${c.anexoUrl ? `<a href="${c.anexoUrl}" target="_blank" class="btn btn-sm btn-warning w-100 mb-2 fw-bold" style="color:#000">📎 VER ANEXO USUÁRIO</a>` : ''}
-
+                                <div class="desc-box"><b>SOLICITAÇÃO:</b><br>${c.descricao}</div>
+                                ${c.anexoUrl ? `<a href="${c.anexoUrl}" target="_blank" class="btn btn-sm btn-warning w-100 mb-2 fw-bold">📎 VER ANEXO</a>` : ''}
                                 <div class="chat-box small">
                                     ${(c.mensagens || []).map(m => `
-                                        <div class="${m.autor === tecNome ? 'msg-tec' : 'msg-user'} ${!m.lido && m.autor !== tecNome ? 'msg-nao-lida' : ''}">
-                                            <b>${m.autor}:</b> ${m.texto}
-                                            <span class="msg-data">${m.data || ''}</span>
+                                        <div class="${m.autor === tNome ? 'msg-tec' : 'msg-user'} ${!m.lido && m.autor !== tNome ? 'msg-nao-lida' : ''}">
+                                            <b>${m.autor}:</b> ${m.texto}<span class="msg-data">${m.data || ''}</span>
                                         </div>`).join('')}
                                 </div>
-
-                                ${c.status === 'Concluído' ? `
-                                    <div class="solucao-box">
-                                        <strong>✅ SOLUÇÃO:</strong><br>${c.solucao}
-                                        ${c.anexoSolucao ? `<br><a href="${c.anexoSolucao}" target="_blank" class="btn btn-xs btn-success mt-2 py-1 px-2 text-white text-decoration-none rounded d-inline-block" style="font-size:0.65rem">📂 VER COMPROVANTE</a>` : ''}
-                                    </div>
-                                ` : ''}
-
-                                <div class="tec-resp">Resp: ${c.tecnicoResponsavel || 'AGUARDANDO...'}</div>
-                                
-                                <div class="mt-auto">
-                                    ${!c.tecnicoResponsavel ? 
-                                        `<button class="btn btn-primary btn-sm w-100 fw-bold btn-acao" onclick="capturar('${id}')">CAPTURAR</button>` : 
-                                        (c.tecnicoResponsavel === tecNome && c.status !== 'Concluído' ? `
-                                            <div class="d-flex flex-column gap-1">
-                                                <div class="d-flex gap-1">
-                                                    <button onclick="enviarMsg('${id}', ${JSON.stringify(c.mensagens || []).replace(/"/g, '&quot;')})" class="btn btn-info btn-sm text-white flex-grow-1 btn-acao">RESPONDER</button>
-                                                    <button class="btn btn-success btn-sm flex-grow-1 btn-acao" onclick="abrirModalFinalizar('${id}')">FINALIZAR</button>
-                                                </div>
-                                                <button onclick="transferir('${id}')" class="btn btn-outline-secondary btn-sm w-100 btn-acao">🔄 TRANSFERIR</button>
-                                            </div>
-                                        ` : `<div class="alert alert-secondary p-1 mb-0 text-center small fw-bold">${c.status.toUpperCase()}</div>`)
-                                    }
+                                ${c.status === 'Concluído' ? `<div class="solucao-box">✅ SOLUÇÃO: ${c.solucao}</div>` : ''}
+                                <div class="tec-resp">RESP: ${c.tecnicoResponsavel || 'PENDENTE'}</div>
+                                <div class="mt-2 d-flex flex-column gap-1">
+                                    ${!c.tecnicoResponsavel ? `<button class="btn btn-primary btn-sm w-100 btn-acao" onclick="capturar('${id}')">CAPTURAR</button>` : 
+                                    (c.tecnicoResponsavel === tNome && c.status !== 'Concluído' ? `
+                                        <div class="d-flex gap-1">
+                                            <button onclick="enviarMsg('${id}', ${JSON.stringify(c.mensagens || []).replace(/"/g, '&quot;')})" class="btn btn-info btn-sm text-white flex-grow-1 btn-acao">RESPONDER</button>
+                                            <button class="btn btn-success btn-sm flex-grow-1 btn-acao" onclick="abrirModalFinalizar('${id}')">FINALIZAR</button>
+                                        </div>
+                                        <button onclick="transferir('${id}')" class="btn btn-outline-secondary btn-sm w-100 btn-acao">TRANSFERIR</button>` : '')}
                                 </div>
                             </div>
                         </div>`;
@@ -468,17 +318,10 @@
             document.getElementById('contadorTotal').innerText = contador;
         });
     }
-
     document.getElementById('filtroStatus').onchange = monitorar;
     document.getElementById('filtroData').onchange = monitorar;
     monitorar();
-
-    // Exportação Global
-    window.capturar = capturar;
-    window.transferir = transferir;
-    window.enviarMsg = enviarMsg;
-    window.abrirModalFinalizar = abrirModalFinalizar;
-    window.sair = sair;
+    window.capturar = capturar; window.transferir = transferir; window.enviarMsg = enviarMsg; window.abrirModalFinalizar = abrirModalFinalizar; window.sair = sair;
 </script>
 </body>
 </html>

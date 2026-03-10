@@ -3,66 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acompanhar Meus Chamados</title>
+    <title>Delta Cyber Security - Acompanhar Chamados</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <style>
-        body {
-            background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), 
-                        url('https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover; background-attachment: fixed; min-height: 100vh;
-            color: white; font-family: 'Segoe UI', sans-serif; padding: 30px;
+        :root {
+            --primary-color: #1abc9c; 
+            --primary-hover: #16a085;
+            --bg-body: #f1f5f9;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --dark-blue: #0f172a;
         }
+
+        body { 
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 30px 20px;
+            margin: 0;
+        }
+
         .container-acompanhar { max-width: 750px; margin: 0 auto; }
         
         /* BOTÃO VOLTAR */
         .btn-voltar { 
-            background: rgba(13, 110, 253, 0.1); color: #0d6efd; border: 1px solid #0d6efd; 
-            font-weight: 800; border-radius: 10px; transition: 0.3s; text-decoration: none; 
-            padding: 10px 20px; display: inline-block; margin-bottom: 25px; text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            transition: 0.2s;
+            display: inline-block;
+            margin-bottom: 25px;
+            text-transform: uppercase;
         }
-        .btn-voltar:hover { background: #0d6efd; color: white; transform: scale(1.02); }
+        .btn-voltar:hover { background: #f8fafc; color: var(--primary-color); border-color: var(--primary-color); }
         
-        /* VISIBILIDADE DOS CAMPOS (TEXTO BRANCO) */
-        .form-control { 
-            background: rgba(255,255,255,0.1) !important; 
-            border: 1px solid #444 !important; 
-            color: white !important; 
-            padding: 14px; 
-            border-radius: 10px;
+        /* DESTAQUE DO TÍTULO SUPERIOR */
+        .header-section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        .header-section h3 {
+            color: var(--primary-color); /* A COR DE DESTAQUE SOLICITADA */
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .header-section p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
         }
 
-        /* FORÇANDO PLACEHOLDER BRANCO BRILHANTE */
-        .form-control::placeholder { color: #ffffff !important; opacity: 1 !important; font-weight: 500; }
-        .form-control::-webkit-input-placeholder { color: #ffffff !important; opacity: 1 !important; }
-        .form-control::-moz-placeholder { color: #ffffff !important; opacity: 1 !important; }
+        /* BOX DE PESQUISA */
+        .search-box { 
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            padding: 25px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
 
-        .card-chamado { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid #333; border-radius: 15px; padding: 25px; margin-bottom: 20px; transition: 0.3s; }
-        .card-notif { border: 2px solid #ffc107 !important; background: rgba(255, 193, 7, 0.1); }
-        .chat-box { background: #ffffff; border-radius: 10px; padding: 15px; height: 200px; overflow-y: auto; margin: 15px 0; color: #222; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); }
-        .msg-line { margin-bottom: 10px; font-size: 0.85rem; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .badge-new { background: #ffc107; color: #000; font-size: 0.75rem; font-weight: 900; padding: 4px 10px; border-radius: 12px; margin-left: 10px; }
+        .form-label {
+            font-weight: 700;
+            font-size: 0.7rem;
+            color: var(--text-main);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-control { 
+            background: #f8fafc !important; 
+            border: 1px solid var(--border-color) !important; 
+            color: var(--text-main) !important; 
+            padding: 10px 14px; 
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 4px rgba(26, 188, 156, 0.1) !important;
+            background: #ffffff !important;
+        }
+
+        .btn-buscar {
+            background-color: var(--dark-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            width: 100%;
+            margin-top: 15px;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        .btn-buscar:hover { background-color: #000000; transform: translateY(-1px); }
+
+        /* CARDS DE RESULTADO */
+        .card-chamado { 
+            background: #ffffff; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        
+        .card-notif { 
+            border-left: 5px solid var(--primary-color) !important; 
+            background: #f0fdfa; 
+        }
+
+        .chat-box { 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0;
+            border-radius: 8px; 
+            padding: 15px; 
+            max-height: 250px; 
+            overflow-y: auto; 
+            margin: 15px 0; 
+        }
+
+        .msg-line { 
+            margin-bottom: 10px; 
+            font-size: 0.85rem; 
+            padding-bottom: 8px; 
+            border-bottom: 1px solid #edf2f7; 
+        }
+        .msg-line:last-child { border-bottom: none; }
+
+        .btn-responder {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 700;
+            padding: 10px;
+            border-radius: 8px;
+            width: 100%;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .btn-responder:hover { background-color: var(--primary-color); color: white; }
+
+        .badge-status {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 50px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
 
-<div class="container-acompanhar text-center">
-    <a href="index.html" class="btn-voltar">← VOLTAR PARA ABERTURA</a>
+<div class="container-acompanhar">
+    <a href="index.html" class="btn-voltar"><i class="bi bi-arrow-left"></i> Voltar</a>
 
-    <h3 class="text-primary fw-bold mb-4">PESQUISAR MEUS CHAMADOS 🎫</h3>
+    <div class="header-section">
+        <h3>Consultar Chamados</h3>
+        <p>Acompanhe o status e converse com nossos técnicos.</p>
+    </div>
     
-    <div class="p-4 bg-dark rounded shadow mb-5" style="border: 1px solid #333; background: rgba(30, 33, 37, 0.95) !important;">
+    <div class="search-box">
         <div class="row g-2">
             <div class="col-6">
-                <input type="text" id="n" class="form-control" placeholder="Seu Nome">
+                <label class="form-label">Seu Nome</label>
+                <input type="text" id="n" class="form-control" placeholder="Ex: Lucas">
             </div>
             <div class="col-6">
-                <input type="text" id="s" class="form-control" placeholder="Sobre nome">
+                <label class="form-label">Sobrenome</label>
+                <input type="text" id="s" class="form-control" placeholder="Ex: Silva">
             </div>
         </div>
-        <button onclick="buscarChamados()" class="btn btn-primary w-100 mt-3 fw-bold py-2">BUSCAR CHAMADOS AGORA</button>
+        <button onclick="buscarChamados()" class="btn-buscar">Pesquisar Chamados</button>
     </div>
 
-    <div id="resultadoBusca" class="text-start"></div>
+    <div id="resultadoBusca"></div>
 </div>
 
 <script type="module">
@@ -74,16 +208,15 @@
         authDomain: "sistema-chamados-c3e61.firebaseapp.com",
         projectId: "sistema-chamados-c3e61",
         storageBucket: "sistema-chamados-c3e61.firebasestorage.app",
-        messagingSenderId: "782902435377",
         appId: "1:782902435377:web:937600794bd6b7c0397f10"
     };
+
     const db = getFirestore(initializeApp(firebaseConfig));
 
     window.responder = async (id, meuNome, mensagensAtuais) => {
-        const txt = prompt("Sua mensagem para o técnico:");
+        const txt = prompt("Sua mensagem:");
         if(txt) {
             const agora = new Date().toLocaleString('pt-BR');
-            // Marca mensagens anteriores como lidas e adiciona a nova do usuário
             const novasMsgs = mensagensAtuais.map(m => ({...m, lido: true}));
             novasMsgs.push({ autor: meuNome, texto: txt, data: agora, lido: false });
             await updateDoc(doc(db, "chamados", id), { mensagens: novasMsgs });
@@ -93,38 +226,48 @@
     window.buscarChamados = () => {
         const nome = document.getElementById('n').value;
         const sobre = document.getElementById('s').value;
-        if(!nome || !sobre) return alert("Preencha nome e sobrenome.");
+        if(!nome || !sobre) return alert("Preencha os campos.");
 
         const q = query(collection(db, "chamados"), where("nome", "==", nome), where("sobrenome", "==", sobre));
+        
         onSnapshot(q, (snap) => {
             const res = document.getElementById('resultadoBusca');
             res.innerHTML = '';
             
+            if (snap.empty) {
+                res.innerHTML = '<div class="alert alert-light text-center border">Nenhum registro encontrado.</div>';
+                return;
+            }
+
             snap.forEach(d => {
                 const c = d.data();
                 const temNotif = c.mensagens?.some(m => m.autor !== nome && m.lido === false);
 
                 res.innerHTML += `
-                    <div class="card-chamado shadow ${temNotif ? 'card-notif' : ''}">
-                        <div class="d-flex justify-content-between align-items-start">
+                    <div class="card-chamado ${temNotif ? 'card-notif' : ''}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <h5 class="text-primary fw-bold mb-0">${c.titulo}</h5>
-                                <small class="text-white-50">Setor: ${c.departamento}</small>
+                                <h6 class="fw-bold mb-0">${c.titulo}</h6>
+                                <span class="text-muted" style="font-size: 0.75rem">${c.departamento}</span>
                             </div>
-                            <span class="badge bg-info text-dark">${c.status}</span>
+                            <span class="badge-status ${c.status === 'Concluído' ? 'bg-success text-white' : 'bg-warning text-dark'}">
+                                ${c.status}
+                            </span>
                         </div>
                         
-                        <div class="chat-box shadow-sm">
-                            <strong>Conversa com TI:</strong><hr class="my-2">
+                        <div class="chat-box">
                             ${c.mensagens?.map(m => `
                                 <div class="msg-line">
-                                    <small class="text-muted">${m.data || ''}</small><br>
-                                    <b>${m.autor}:</b> ${m.texto}
-                                </div>`).join('') || 'Aguardando início do atendimento...'}
+                                    <div class="d-flex justify-content-between">
+                                        <b style="color: ${m.autor === nome ? '#64748b' : '#1abc9c'}">${m.autor}</b>
+                                        <small class="text-muted" style="font-size: 0.6rem">${m.data || ''}</small>
+                                    </div>
+                                    <div class="mt-1">${m.texto}</div>
+                                </div>`).join('') || 'Iniciando chamado...'}
                         </div>
                         
-                        <button onclick="responder('${d.id}', '${c.nome}', ${JSON.stringify(c.mensagens).replace(/"/g, '&quot;')})" class="btn btn-outline-primary w-100 fw-bold">
-                            ENVIAR RESPOSTA ${temNotif ? '<span class="badge-new">NOVA MENSAGEM</span>' : ''}
+                        <button onclick="responder('${d.id}', '${c.nome}', ${JSON.stringify(c.mensagens).replace(/"/g, '&quot;')})" class="btn-responder">
+                            Responder ${temNotif ? '<span class="ms-1">●</span>' : ''}
                         </button>
                     </div>`;
             });
