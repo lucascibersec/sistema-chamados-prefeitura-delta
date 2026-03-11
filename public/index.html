@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suporte Técnico Prefeitura de Delta </title>
+    <title>Suporte Técnico Prefeitura de Delta</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,7 +13,7 @@
         :root {
             --primary-color: #1abc9c; 
             --primary-hover: #16a085;
-            --bg-body: #f1f5f9;
+            --bg-body: #576574; /* COR CINZA ATUALIZADA */
             --text-main: #1e293b;
             --border-color: #cbd5e1;
         }
@@ -38,10 +38,9 @@
             max-width: 550px;
             padding: 35px;
             color: var(--text-main);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
         }
 
-        /* BOTÃO ACOMPANHAR COM DESTAQUE */
         .btn-ver-meus {
             display: block;
             width: 100%;
@@ -61,7 +60,6 @@
 
         .brand-header { text-align: center; margin-bottom: 25px; }
 
-        /* DESTAQUE DO TÍTULO DE ABERTURA */
         .brand-header h4 {
             color: var(--primary-color); 
             font-weight: 800;
@@ -112,24 +110,21 @@
     </style>
 </head>
 <body>
-
     <div class="main-card">
         <a href="acompanhar.html" class="btn-ver-meus">🔎 ACOMPANHAR MEUS CHAMADOS</a>
-
         <div class="brand-header">
-            <h4 class="mb-0">Gestão e Suporte em Técnologia 🛠️</h4>
-            <p class="small mt-1 text-muted" style="font-weight: 600;"> Ezequias, Jean, Ramon, Gustavo, Lucas</p>
+            <h4 class="mb-0"><b>Gestão e Suporte em Técnologia 🛠️</b></h4>
+            <p class="small mt-1 text-muted" style="font-weight: 1000;"><b>Ezequias, Jean, Ramon, Gustavo, Lucas</b></p>
         </div>
-
         <form id="formChamado">
             <div class="row g-2 mb-3">
                 <div class="col-6">
                     <label class="form-label">Nome</label>
-                    <input type="text" id="nome" class="form-control" placeholder="Mateus" required>
+                    <input type="text" id="nome" class="form-control" placeholder="Ex: Mateus" required>
                 </div>
                 <div class="col-6">
                     <label class="form-label">Sobrenome</label>
-                    <input type="text" id="sobrenome" class="form-control" placeholder="Silva" required>
+                    <input type="text" id="sobrenome" class="form-control" placeholder="Ex: Silva" required>
                 </div>
             </div>
 
@@ -137,37 +132,37 @@
                 <label class="form-label">Departamento / Secretaria</label>
                 <select id="departamento" class="form-select" required>
                     <option value="" disabled selected>Selecione o local...</option>
-                    <option>Administração e Planejamento</option>
-                    <option>Arquivos</option>
-                    <option>Água e Saneamento</option>
-                    <option>Almoxarifado Geral</option>
-                    <option>Assistência Social / CRAS</option>
-                    <option>Câmara Municipal</option>
-                    <option>Comunicação e Eventos</option>
-                    <option>Cultura e Turismo</option>
-                    <option>EE Ivan Mattar Soukef</option>
-                    <option>EM Ana de Castro Cançado</option>
-                    <option>Escola Municipal Olavo de Oliveira Ferreira</option>
-                    <option>CEMEI Patrícia Aparecida Dias</option>
-                    <option>Centro Municipal de Educação Infantil Ariane Depeatriz</option>
-                    <option>Clinica de Especialidades</option>
-                    <option>Esportes e Lazer</option>
-                    <option>Esf1</option>
-                    <option>Esf2</option>
-                    <option>Esf3</option>
-                    <option>Fazenda e Finanças</option>
-                    <option>Gabinete do Prefeito</option>
-                    <option>Jurídico / Procuradoria</option>
-                    <option>Meio Ambiente</option>
-                    <option>Obras e Infraestrutura</option>
-                    <option>Posto de Saúde Geraldo Salge</option>
-                    <option>Recursos Humanos (RH)</option>
-                    <option>Secretaria de Saúde</option>
-                    <option>Secretaria de Governo</option>
-                    <option>Secretaria de Compras</option>
-                    <option>Segurança Pública / Guarda</option>
-                    <option>Transportes e Frota</option>
-                    <option>Vigilância / Zonose</option>
+                    <option style="font-weight: 900; color: #000;">Administração e Planejamento</option>
+                    <option style="font-weight: 900; color: #000;">Arquivos</option>
+                    <option style="font-weight: 900; color: #000;">Água e Saneamento</option>
+                    <option style="font-weight: 900; color: #000;">Almoxarifado Geral</option>
+                    <option style="font-weight: 900; color: #000;">Assistência Social / CRAS</option>
+                    <option style="font-weight: 900; color: #000;">Câmara Municipal</option>
+                    <option style="font-weight: 900; color: #000;">Comunicação e Eventos</option>
+                    <option style="font-weight: 900; color: #000;">Cultura e Turismo</option>
+                    <option style="font-weight: 900; color: #000;">EE Ivan Mattar Soukef</option>
+                    <option style="font-weight: 900; color: #000;">EM Ana de Castro Cançado</option>
+                    <option style="font-weight: 900; color: #000;">Escola Municipal Olavo de Oliveira Ferreira</option>
+                    <option style="font-weight: 900; color: #000;">CEMEI Patrícia Aparecida Dias</option>
+                    <option style="font-weight: 900; color: #000;">Centro Municipal de Educação Infantil Ariane Depeatriz</option>
+                    <option style="font-weight: 900; color: #000;">Clinica de Especialidades</option>
+                    <option style="font-weight: 900; color: #000;">Esportes e Lazer</option>
+                    <option style="font-weight: 900; color: #000;">Esf1</option>
+                    <option style="font-weight: 900; color: #000;">Esf2</option>
+                    <option style="font-weight: 900; color: #000;">Esf3</option>
+                    <option style="font-weight: 900; color: #000;">Fazenda e Finanças</option>
+                    <option style="font-weight: 900; color: #000;">Gabinete do Prefeito</option>
+                    <option style="font-weight: 900; color: #000;">Jurídico / Procuradoria</option>
+                    <option style="font-weight: 900; color: #000;">Meio Ambiente</option>
+                    <option style="font-weight: 900; color: #000;">Obras e Infraestrutura</option>
+                    <option style="font-weight: 900; color: #000;">Posto de Saúde Geraldo Salge</option>
+                    <option style="font-weight: 900; color: #000;">Recursos Humanos (RH)</option>
+                    <option style="font-weight: 900; color: #000;">Secretaria de Saúde</option>
+                    <option style="font-weight: 900; color: #000;">Secretaria de Governo</option>
+                    <option style="font-weight: 900; color: #000;">Secretaria de Compras</option>
+                    <option style="font-weight: 900; color: #000;">Segurança Pública / Guarda</option>
+                    <option style="font-weight: 900; color: #000;">Transportes e Frota</option>
+                    <option style="font-weight: 900; color: #000;">Vigilância / Zonose</option>
                 </select>
             </div>
 
@@ -175,16 +170,16 @@
                 <label class="form-label">Tipo de Problema (Tópico)</label>
                 <select id="titulo" class="form-select" required>
                     <option value="" disabled selected>Selecione o reparo...</option>
-                    <option>Computador não liga ou Lento</option>
-                    <option>Configuração de E-mail / Gmail</option>
-                    <option>Impressora (Papel preso / Tonner)</option>
-                    <option>Instalação de Software / Programas</option>
-                    <option>Internet Caindo / Sem Wi-Fi</option>
-                    <option>Rede Interna / Pastas Compartilhadas</option>
-                    <option>Sistema da Prefeitura (Erro de Login)</option>
-                    <option>Telefone Fixo / Ramal com Ruído</option>
-                    <option>Vírus / Mensagens Suspeitas</option>
-                    <option>Outros (Descrever abaixo)</option>
+                    <option style="font-weight: 900; color: #000;">Computador não liga ou Lento</option>
+                    <option style="font-weight: 900; color: #000;">Configuração de E-mail / Gmail</option>
+                    <option style="font-weight: 900; color: #000;">Impressora (Papel preso / Tonner)</option>
+                    <option style="font-weight: 900; color: #000;">Instalação de Software / Programas</option>
+                    <option style="font-weight: 900; color: #000;">Internet Caindo / Sem Wi-Fi</option>
+                    <option style="font-weight: 900; color: #000;">Rede Interna / Pastas Compartilhadas</option>
+                    <option style="font-weight: 900; color: #000;">Sistema da Prefeitura (Erro de Login)</option>
+                    <option style="font-weight: 900; color: #000;">Telefone Fixo / Ramal com Ruído</option>
+                    <option style="font-weight: 900; color: #000;">Vírus / Mensagens Suspeitas</option>
+                    <option style="font-weight: 900; color: #000;">Outros (Descrever abaixo)</option>
                 </select>
             </div>
 
@@ -198,10 +193,8 @@
                 <div class="btn-group w-100 urgencia-group">
                     <input type="radio" class="btn-check" name="urgencia" id="urg-baixa" value="Baixa" checked>
                     <label class="btn btn-outline-success" for="urg-baixa">BAIXA</label>
-                    
                     <input type="radio" class="btn-check" name="urgencia" id="urg-media" value="Média">
                     <label class="btn btn-outline-warning" for="urg-media">MÉDIA</label>
-                    
                     <input type="radio" class="btn-check" name="urgencia" id="urg-alta" value="Alta">
                     <label class="btn btn-outline-danger" for="urg-alta">ALTA</label>
                 </div>
