@@ -29,16 +29,15 @@
             overflow-x: hidden;
         }
 
-        /* DEPOIS (Código Corrigido) */
-       .header-adm { 
-           background: #ffffff; 
-           color: var(--primary-color); /* <--- ADICIONE ESTA LINHA AQUI */
-           padding: 10px 30px; 
-           position: sticky; 
-           top: 0; 
-           z-index: 1000; 
-           border-bottom: 3px solid var(--primary-color); 
-           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        .header-adm { 
+            background: #ffffff; 
+            color: var(--primary-color); 
+            padding: 10px 30px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            border-bottom: 3px solid var(--primary-color); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .card-chamado { 
@@ -83,7 +82,6 @@
             box-shadow: 0 0 100px rgba(0,0,0,0.5); width: 400px; border: 1px solid var(--border-color);
         }
 
-        /* ESTILO DA NOTIFICAÇÃO */
         .notif-msg { 
             position: absolute; top: 40px; right: 15px; 
             background: #ef4444; color: white; padding: 2px 10px; 
@@ -143,7 +141,6 @@
     document.getElementById('tecLabel').innerText = "OP: " + tNome;
     window.sair = () => { localStorage.clear(); window.location.href = 'login.html'; };
 
-    // FUNÇÕES GLOBAIS
     window.capturar = async (id) => { 
         if(confirm("Capturar chamado?")) await updateDoc(doc(db, "chamados", id), { status: "Em Atendimento", tecnicoResponsavel: tNome });
     };
@@ -179,24 +176,19 @@
 
     async function carregarLogo(url) {
         return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'Anonymous';
+            const img = new Image(); img.crossOrigin = 'Anonymous';
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width; canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
+                const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0);
                 resolve(canvas.toDataURL('image/png'));
             };
-            img.onerror = () => resolve(null);
-            img.src = url;
+            img.onerror = () => resolve(null); img.src = url;
         });
     }
 
     document.getElementById('btnPDF').onclick = async () => {
-        const btn = document.getElementById('btnPDF');
-        btn.disabled = true; btn.innerText = "GERANDO...";
-        
+        const btn = document.getElementById('btnPDF'); btn.disabled = true; btn.innerText = "GERANDO...";
         try {
             const { jsPDF } = window.jspdf;
             const docPDF = new jsPDF('l', 'mm', 'a4');
@@ -220,27 +212,22 @@
                     `${c.nome} ${c.sobrenome}`,
                     c.departamento,
                     c.titulo,
-                    c.tecnicoResponsavel,
+                    c.descricao || 'Sem descrição', // <--- DESCRIÇÃO ADICIONADA AQUI
+                    c.tecnicoResponsavel || '---',
                     historico
                 ];
             });
 
             docPDF.autoTable({
                 startY: 28,
-                head: [['Abertura', 'Finalização', 'Usuário', 'Setor', 'Assunto', 'Técnico', 'Interações']],
+                head: [['Abertura', 'Finalização', 'Usuário', 'Setor', 'Assunto', 'Descrição', 'Técnico', 'Interações']],
                 body: rows,
                 styles: { fontSize: 7, cellPadding: 2 },
                 headStyles: { fillColor: [26, 188, 156] },
-                columnStyles: { 6: { cellWidth: 80 } }
+                columnStyles: { 5: { cellWidth: 45 }, 7: { cellWidth: 50 } }
             });
-
             docPDF.save(`Relatorio_Delta_${Date.now()}.pdf`);
-        } catch (e) {
-            console.error(e);
-            alert("Erro ao gerar PDF.");
-        } finally {
-            btn.disabled = false; btn.innerText = "GERAR RELATÓRIO PDF";
-        }
+        } catch (e) { alert("Erro ao gerar PDF."); } finally { btn.disabled = false; btn.innerText = "GERAR RELATÓRIO PDF"; }
     };
 
     function monitorar() {
@@ -257,21 +244,16 @@
                 if (dataFiltro && dtF !== dataFiltro) exibir = false;
 
                 if (exibir) {
-                    contador++;
-                    const msgs = c.mensagens || [];
-                    // CONTAGEM DE MENSAGENS NÃO LIDAS PARA O TÉCNICO
+                    contador++; const msgs = c.mensagens || [];
                     const nLidas = msgs.filter(m => m.autor !== tNome && m.autor !== "Sistema" && !m.lido).length;
-
                     grid.innerHTML += `<div class="col"><div class="card card-chamado">
                         <div class="sla-bar bg-urg-${c.urgencia.toLowerCase()}"></div>
-                        
                         ${nLidas > 0 ? `<div class="notif-msg">Alerta !! (${nLidas})</div>` : ''}
-
                         <div class="d-flex justify-content-between mb-1"><b>${c.titulo}</b> <span class="badge bg-light text-dark border small">${dt ? dt.toLocaleDateString() : ''}</span></div>
                         <div class="small mb-1"><i class="bi bi-person-fill"></i> <b>${c.nome} ${c.sobrenome}</b><br><i class="bi bi-building"></i> <span class="text-muted">${c.departamento}</span></div>
                         <div class="desc-box">${c.descricao}</div>
                         <div class="chat-box small">${msgs.map(m => `<div class="${m.autor === tNome ? 'msg-tec' : 'msg-user'}"><b>${m.autor}:</b> ${m.texto} <br><small style="font-size:0.6rem; opacity:0.7;">${m.data || ''}</small></div>`).join('')}</div>
-                        <div class="tec-resp">RESP: ${c.tecnicoResponsavel || 'PENDENTE'}</div>
+                        <div class="tec-resp">RESP: <span style="font-weight: 900; color: #000;">${c.tecnicoResponsavel || 'PENDENTE'}</span></div>
                         <div class="mt-2 d-flex flex-column gap-1">
                             ${!c.tecnicoResponsavel ? `<button class="btn btn-primary btn-sm btn-acao w-100" onclick="window.capturar('${id}')">CAPTURAR</button>` : 
                             (c.tecnicoResponsavel === tNome && c.status !== 'Concluído' ? `<div class="d-flex gap-1"><button onclick="window.enviarMsg('${id}', ${JSON.stringify(msgs).replace(/"/g, '&quot;')})" class="btn btn-info btn-sm text-white flex-grow-1">MSG</button><button class="btn btn-success btn-sm flex-grow-1" onclick="window.abrirModalFinalizar('${id}')">FIM</button></div><button class="btn btn-outline-secondary btn-sm w-100" onclick="window.transferir('${id}')">TRANSFERIR</button>` : '')}
