@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso Restrito - Delta Cyber Security</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1abc9c; 
+            --primary-hover: #16a085;
+            --bg-body: #576574; /* CINZA MÉDIO PADRONIZADO */
+            --dark-blue: #0f172a;
+            --border-color: #cbd5e1;
+            --text-main: #1e293b;
+        }
+
+        body { 
+            background-color: var(--bg-body);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .login-box { 
+            background: #ffffff; 
+            padding: 40px; 
+            border-radius: 15px; 
+            border: 1px solid var(--border-color); 
+            width: 100%;
+            max-width: 400px; 
+            color: var(--text-main); 
+            text-align: center; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .brand-logo {
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: var(--dark-blue);
+            margin-bottom: 5px;
+            letter-spacing: -1px;
+        }
+        .brand-logo span { color: var(--primary-color); }
+        
+        .login-subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-label { 
+            color: var(--dark-blue); 
+            font-weight: 700; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            display: block; 
+            text-align: left; 
+            margin-bottom: 6px; 
+        }
+
+        .form-select, .form-control { 
+            background-color: #f8fafc !important; 
+            color: var(--text-main) !important; 
+            border: 1px solid var(--border-color) !important; 
+            padding: 12px;
+            font-size: 0.95rem;
+            border-radius: 8px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 4px rgba(26, 188, 156, 0.1) !important;
+        }
+
+        .input-group-text { 
+            background-color: #f8fafc !important; 
+            border: 1px solid var(--border-color) !important; 
+            color: var(--primary-color) !important; 
+            cursor: pointer; 
+        }
+
+        .btn-logar {
+            background-color: var(--dark-blue);
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        .btn-logar:hover {
+            background-color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        #errorMsg {
+            background: #fef2f2;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #fee2e2;
+            margin-top: 20px;
+            font-size: 0.8rem;
+        }
+
+        .footer-text {
+            margin-top: 25px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <div class="brand-logo">Delta <span>Cyber</span></div>
+        <p class="login-subtitle">Painel do Técnico</p>
+        
+        <div class="mb-4">
+            <label class="form-label">Identificação</label>
+            <select id="tecNome" class="form-select">
+                <option value="" disabled selected>Selecionar Técnico...</option>
+                <option value="Ramon">Ramon</option>
+                <option value="Ezequias">Ezequias</option>
+                <option value="Jean">Jean</option>
+                <option value="Gustavo">Gustavo</option>
+                <option value="Lucas">Lucas</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Senha de Acesso</label>
+            <div class="input-group">
+                <input type="password" id="tecSenha" class="form-control" placeholder="Digite sua senha">
+                <span class="input-group-text" id="togglePassword">
+                    <i class="bi bi-eye-slash" id="iconEye"></i>
+                </span>
+            </div>
+        </div>
+
+        <button id="btnLogar" class="btn-logar">Entrar no Sistema</button>
+        
+        <div id="errorMsg" class="fw-bold" style="display: none;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> DADOS INCORRETOS!
+        </div>
+
+        <div class="footer-text">
+            &copy; 2026 Delta Cyber Security LTDA
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // Configuração Firebase Delta
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpXcAHwayq8AN3VR7Sj7VYteAwSluKovo",
+            authDomain: "sistema-chamados-c3e61.firebaseapp.com",
+            projectId: "sistema-chamados-c3e61",
+            storageBucket: "sistema-chamados-c3e61.firebasestorage.app",
+            appId: "1:782902435377:web:937600794bd6b7c0397f10"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Função Visual: Mostrar/Esconder Senha
+        const toggleBtn = document.getElementById('togglePassword');
+        if(toggleBtn) {
+            toggleBtn.onclick = () => {
+                const passInput = document.getElementById('tecSenha');
+                const icon = document.getElementById('iconEye');
+                if (passInput.type === "password") {
+                    passInput.type = "text";
+                    icon.classList.replace('bi-eye-slash', 'bi-eye');
+                } else {
+                    passInput.type = "password";
+                    icon.classList.replace('bi-eye', 'bi-eye-slash');
+                }
+            };
+        }
+
+        // Lógica de Autenticação
+        const btnLogin = document.getElementById('btnLogar');
+        btnLogin.onclick = async () => {
+            const nome = document.getElementById('tecNome').value;
+            const senha = document.getElementById('tecSenha').value;
+            const errorDiv = document.getElementById('errorMsg');
+            
+            if(!nome || !senha) {
+                alert("Por favor, selecione seu nome e digite a senha.");
+                return;
+            }
+
+            btnLogin.disabled = true;
+            btnLogin.innerText = "AUTENTICANDO...";
+            errorDiv.style.display = "none";
+
+            try {
+                // Busca na coleção 'tecnicos' do seu Firestore
+                const q = query(collection(db, "tecnicos"), 
+                            where("Usuario", "==", nome), 
+                            where("Senha", "==", senha));
+                
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    // Login Sucesso
+                    localStorage.setItem('tecnicoAtivo', nome);
+                    localStorage.setItem('sessaoAtiva', 'true');
+                    window.location.href = 'admin.html';
+                } else {
+                    // Login Falha
+                    errorDiv.style.display = "block";
+                    btnLogin.disabled = false;
+                    btnLogin.innerText = "Entrar no Sistema";
+                }
+            } catch (error) {
+                console.error("Erro no login:", error);
+                alert("Erro de conexão com o banco de dados.");
+                btnLogin.disabled = false;
+                btnLogin.innerText = "Entrar no Sistema";
+            }
+        };
+    </script>
+</body>
+</html>
