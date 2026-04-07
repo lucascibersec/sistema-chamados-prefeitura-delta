@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte Técnico Prefeitura de Delta</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1a32bc; 
+            --primary-hover: #162fa0;
+            --bg-body: #576574; 
+            --text-main: #1e293b;
+            --border-color: #cbd5e1;
+            --accent-green: #20c997;
+        }
+
+        body { 
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .main-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+            width: 100%;
+            max-width: 550px;
+            padding: 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        /* BANNER DE SLA EM DESTAQUE */
+        .sla-warning {
+            background-color: #fff3cd !important;
+            border: 2px solid #f59e0b !important;
+            color: #856404 !important;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            line-height: 1.4;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .sla-warning i { font-size: 1.8rem; color: #d97706; }
+        .sla-warning strong { color: #000; font-weight: 800; }
+
+        .btn-ver-meus {
+            display: block;
+            width: 100%;
+            background: var(--accent-green);
+            color: #ffffff;
+            text-align: center;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 900;
+            text-decoration: none;
+            margin-bottom: 15px;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+        .btn-ver-meus:hover { background: #1ba87e; color: white; transform: translateY(-2px); }
+
+        .brand-header { text-align: center; margin-bottom: 25px; }
+        .brand-header h4 {
+            color: var(--accent-green); 
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-label { 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            font-size: 0.8rem; 
+            letter-spacing: 1px; 
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-control, .form-select { 
+            background: #f8fafc !important; 
+            border: 1px solid var(--border-color) !important; 
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .urgencia-group .btn { font-weight: 800; font-size: 0.75rem; padding: 12px; }
+
+        .btn-enviar {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 16px;
+            font-weight: 900;
+            border-radius: 12px;
+            text-transform: uppercase;
+            width: 100%;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        .btn-enviar:hover { background: #000; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="main-card">
+        <a href="acompanhar.html" class="btn-ver-meus">🔎 ACOMPANHAR MEUS CHAMADOS</a>
+
+        <div class="sla-warning">
+            <i class="bi bi-clock-history"></i>
+            <span>
+                <strong>INFORMATIVO:</strong> O prazo para atendimento e solução segue os parâmetros da <strong>Lei nº 13.460/2017</strong> e <strong>Decreto Municipal</strong>. O tempo estimado para resposta inicial é de até <strong>24 horas úteis</strong>, podendo variar conforme a complexidade técnica.
+            </span>
+        </div>
+
+        <div class="brand-header">
+            <h4 class="mb-0">Gestão e Suporte em Tecnologia 🛠️</h4>
+            <p class="small mt-1 text-muted" style="font-weight: 900;">Ezequias, Jean, Ramon, Gustavo, Lucas</p>
+        </div>
+
+        <form id="formChamado">
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label">Nome</label>
+                    <input type="text" id="nome" class="form-control" placeholder="Ex: Mateus" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Sobre nome</label>
+                    <input type="text" id="sobrenome" class="form-control" placeholder="Ex: Silva" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Departamento / Secretaria</label>
+                <select id="departamento" class="form-select" required>
+                    <option value="" disabled selected>Selecione o local...</option>
+                    <option style="font-weight: 900; color: #000;">Administração e Planejamento</option>
+                    <option style="font-weight: 900; color: #000;">Arquivos</option>
+                    <option style="font-weight: 900; color: #000;">Água e Saneamento</option>
+                    <option style="font-weight: 900; color: #000;">Almoxarifado Geral</option>
+                    <option style="font-weight: 900; color: #000;">Assistência Social / CRAS</option>
+                    <option style="font-weight: 900; color: #000;">Câmara Municipal</option>
+                    <option style="font-weight: 900; color: #000;">Comunicação e Eventos</option>
+                    <option style="font-weight: 900; color: #000;">Conselho Tutelar</option>
+                    <option style="font-weight: 900; color: #000;">Cultura e Turismo</option>
+                    <option style="font-weight: 900; color: #000;">EE Ivan Mattar Soukef</option>
+                    <option style="font-weight: 900; color: #000;">EM Ana de Castro Cançado</option>
+                    <option style="font-weight: 900; color: #000;">Escola Municipal Olavo de Oliveira Ferreira</option>
+                    <option style="font-weight: 900; color: #000;">CEMEI Patrícia Aparecida Dias</option>
+                    <option style="font-weight: 900; color: #000;">Centro Municipal de Educação Infantil Ariane Depeatriz</option>
+                    <option style="font-weight: 900; color: #000;">Clinica de Especialidades</option>
+                    <option style="font-weight: 900; color: #000;">Esportes e Lazer</option>
+                    <option style="font-weight: 900; color: #000;">Esf1</option>
+                    <option style="font-weight: 900; color: #000;">Esf2</option>
+                    <option style="font-weight: 900; color: #000;">Esf3</option>
+                    <option style="font-weight: 900; color: #000;">Fazenda e Finanças</option>
+                    <option style="font-weight: 900; color: #000;">Gabinete do Prefeito</option>
+                    <option style="font-weight: 900; color: #000;">Jurídico / Procuradoria</option>
+                    <option style="font-weight: 900; color: #000;">Meio Ambiente</option>
+                    <option style="font-weight: 900; color: #000;">Obras e Infraestrutura</option>
+                    <option style="font-weight: 900; color: #000;">Posto de Saúde Geraldo Salge</option>
+                    <option style="font-weight: 900; color: #000;">Recursos Humanos (RH)</option>
+                    <option style="font-weight: 900; color: #000;">Secretaria de Saúde</option>
+                    <option style="font-weight: 900; color: #000;">Secretaria de Governo</option>
+                    <option style="font-weight: 900; color: #000;">Secretaria de Compras</option>
+                    <option style="font-weight: 900; color: #000;">Secretaria de Educação</option>
+                    <option style="font-weight: 900; color: #000;">Segurança Pública / Guarda</option>
+                    <option style="font-weight: 900; color: #000;">Transportes e Frota</option>
+                    <option style="font-weight: 900; color: #000;">Vigilância / Zoonose</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Tipo de Problema</label>
+                <select id="titulo" class="form-select" required>
+                    <option value="" disabled selected>Selecione o reparo...</option>
+                    <option>Computador não liga ou Lento</option>
+                    <option>Configuração de E-mail / Gmail</option>
+                    <option>Impressora (Papel preso / Tonner)</option>
+                    <option>Instalação de Software / Programas</option>
+                    <option>Internet Caindo / Sem Wi-Fi</option>
+                    <option>Rede Interna / Pastas Compartilhadas</option>
+                    <option>Sistema da Prefeitura (Erro de Login)</option>
+                    <option>Telefone Fixo / Ramal com Ruído</option>
+                    <option>Vírus / Mensagens Suspeitas</option>
+                    <option>Outros (Descrever abaixo)</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Descrição Detalhada</label>
+                <textarea id="descricao" class="form-control" rows="3" placeholder="Descreva o problema aqui..." required></textarea>
+            </div>
+
+            <div class="mb-4 text-center">
+                <label class="form-label d-block">Urgência</label>
+                <div class="btn-group w-100 urgencia-group">
+                    <input type="radio" class="btn-check" name="urgencia" id="urg-baixa" value="Baixa" checked>
+                    <label class="btn btn-outline-success" for="urg-baixa">BAIXA</label>
+                    <input type="radio" class="btn-check" name="urgencia" id="urg-media" value="Média">
+                    <label class="btn btn-outline-warning" for="urg-media">MÉDIA</label>
+                    <input type="radio" class="btn-check" name="urgencia" id="urg-alta" value="Alta">
+                    <label class="btn btn-outline-danger" for="urg-alta">ALTA</label>
+                </div>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn-enviar">Registrar Chamado</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpXcAHwayq8AN3VR7Sj7VYteAwSluKovo",
+            authDomain: "sistema-chamados-c3e61.firebaseapp.com",
+            projectId: "sistema-chamados-c3e61",
+            storageBucket: "sistema-chamados-c3e61.firebasestorage.app",
+            appId: "1:782902435377:web:937600794bd6b7c0397f10"
+        };
+
+        const db = getFirestore(initializeApp(firebaseConfig));
+
+        document.getElementById('formChamado').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerText = "ENVIANDO...";
+
+            try {
+                await addDoc(collection(db, "chamados"), {
+                    nome: document.getElementById('nome').value,
+                    sobrenome: document.getElementById('sobrenome').value,
+                    departamento: document.getElementById('departamento').value,
+                    titulo: document.getElementById('titulo').value,
+                    descricao: document.getElementById('descricao').value,
+                    urgencia: document.querySelector('input[name="urgencia"]:checked').value,
+                    status: "Aberto",
+                    dataCriacao: serverTimestamp()
+                });
+                alert("Chamado registrado com sucesso! O prazo de resposta é de 24h úteis.");
+                location.reload();
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao enviar. Verifique sua conexão.");
+                btn.disabled = false;
+                btn.innerText = "Registrar Chamado";
+            }
+        };
+    </script>
+</body>
+</html>

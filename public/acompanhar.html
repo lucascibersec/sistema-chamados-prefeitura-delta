@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delta Cyber Security - Acompanhar Chamados</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1a38bc; 
+            --primary-hover: #16a085;
+            --bg-body: #576574; /* CINZA PADRONIZADO */
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --dark-blue: #0f172a;
+        }
+
+        body { 
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container-acompanhar { max-width: 650px; margin: 0 auto; }
+        
+        .btn-voltar { 
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.2);
+            transition: 0.2s;
+            display: inline-block;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .btn-voltar:hover { background: white; color: var(--dark-blue); }
+        
+        .header-section { text-align: center; margin-bottom: 25px; }
+        .header-section h3 { color: var(--primary-color); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .header-section p { color: #e2e8f0; font-size: 0.8rem; }
+
+        .search-box { 
+            background: #ffffff; 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            margin-bottom: 25px;
+        }
+
+        .form-label { font-weight: 700; font-size: 0.65rem; color: var(--dark-blue); text-transform: uppercase; margin-bottom: 4px; display: block; }
+
+        .form-control { 
+            background: #f8fafc !important; 
+            border: 1px solid var(--border-color) !important; 
+            padding: 8px 12px; 
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .btn-buscar {
+            background-color: var(--dark-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        /* CARDS COMPACTOS */
+        .card-chamado { 
+            background: #ffffff; 
+            border-radius: 10px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .card-notif { border-left: 5px solid #ef4444 !important; background: #fffbfb; }
+
+        .desc-pessoal {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            margin: 10px 0;
+            border-left: 3px solid var(--primary-color);
+            color: #334155;
+        }
+
+        .chat-box { 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0;
+            border-radius: 8px; 
+            padding: 10px; 
+            max-height: 180px; 
+            overflow-y: auto; 
+            margin-bottom: 10px; 
+        }
+
+        .msg-line { 
+            margin-bottom: 8px; 
+            font-size: 0.75rem; 
+            padding-bottom: 5px; 
+            border-bottom: 1px solid #edf2f7; 
+        }
+        .msg-line:last-child { border-bottom: none; }
+
+        .btn-responder {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 700;
+            padding: 8px;
+            border-radius: 6px;
+            width: 100%;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+        .btn-responder:hover { background-color: var(--primary-color); color: white; }
+
+        .badge-status { font-size: 0.6rem; font-weight: 800; padding: 3px 8px; border-radius: 50px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+<div class="container-acompanhar">
+    <a href="index.html" class="btn-voltar"><i class="bi bi-arrow-left"></i> Voltar</a>
+
+    <div class="header-section">
+        <h3>Meus Chamados</h3>
+        <p>Consulte o andamento das suas solicitações</p>
+    </div>
+    
+    <div class="search-box">
+        <div class="row g-2">
+            <div class="col-6">
+                <label class="form-label">Nome</label>
+                <input type="text" id="n" class="form-control" placeholder="Lucas">
+            </div>
+            <div class="col-6">
+                <label class="form-label">Sobrenome</label>
+                <input type="text" id="s" class="form-control" placeholder="Silva">
+            </div>
+        </div>
+        <button onclick="buscarChamados()" class="btn-buscar">PESQUISAR</button>
+    </div>
+
+    <div id="resultadoBusca"></div>
+</div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCpXcAHwayq8AN3VR7Sj7VYteAwSluKovo",
+        authDomain: "sistema-chamados-c3e61.firebaseapp.com",
+        projectId: "sistema-chamados-c3e61",
+        storageBucket: "sistema-chamados-c3e61.firebasestorage.app",
+        appId: "1:782902435377:web:937600794bd6b7c0397f10"
+    };
+
+    const db = getFirestore(initializeApp(firebaseConfig));
+
+    window.responder = async (id, meuNome, mensagensAtuais) => {
+        const txt = prompt("Sua mensagem:");
+        if(txt) {
+            const agora = new Date().toLocaleString('pt-BR');
+            const novasMsgs = (mensagensAtuais || []).map(m => ({...m, lido: true}));
+            novasMsgs.push({ autor: meuNome, texto: txt, data: agora, lido: false });
+            await updateDoc(doc(db, "chamados", id), { mensagens: novasMsgs });
+        }
+    };
+
+    window.buscarChamados = () => {
+        const nome = document.getElementById('n').value.trim();
+        const sobre = document.getElementById('s').value.trim();
+        if(!nome || !sobre) return alert("Preencha nome e sobrenome.");
+
+        const q = query(collection(db, "chamados"), where("nome", "==", nome), where("sobrenome", "==", sobre));
+        
+        onSnapshot(q, (snap) => {
+            const res = document.getElementById('resultadoBusca');
+            res.innerHTML = '';
+            
+            if (snap.empty) {
+                res.innerHTML = '<div class="alert alert-light text-center border small">Nenhum chamado encontrado.</div>';
+                return;
+            }
+
+            snap.forEach(d => {
+                const c = d.data();
+                const msgs = c.mensagens || [];
+                const temNotif = msgs.some(m => m.autor.toLowerCase() !== nome.toLowerCase() && m.lido === false);
+
+                res.innerHTML += `
+                    <div class="card-chamado ${temNotif ? 'card-notif' : ''}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">${c.titulo}</h6>
+                                <small class="text-muted">${c.departamento}</small>
+                            </div>
+                            <span class="badge-status ${c.status === 'Concluído' ? 'bg-success text-white' : 'bg-warning text-dark'}">
+                                ${c.status}
+                            </span>
+                        </div>
+                        
+                        <div class="desc-pessoal">
+                            <i class="bi bi-info-circle me-1"></i> <strong>Sua solicitação:</strong><br>
+                            ${c.descricao || 'Sem descrição.'}
+                        </div>
+
+                        <div class="chat-box">
+                            ${msgs.map(m => `
+                                <div class="msg-line">
+                                    <div class="d-flex justify-content-between">
+                                        <b style="color: ${m.autor.toLowerCase() === nome.toLowerCase() ? '#64748b' : '#1abc9c'}">${m.autor}</b>
+                                        <span style="font-size: 0.55rem; color: #999;">${m.data || ''}</span>
+                                    </div>
+                                    <div class="mt-1">${m.texto}</div>
+                                </div>`).join('') || '<div class="small text-muted">Aguardando atendimento...</div>'}
+                        </div>
+                        
+                        ${c.status !== 'Concluído' ? `
+                            <button onclick="responder('${d.id}', '${c.nome}', ${JSON.stringify(msgs).replace(/"/g, '&quot;')})" class="btn-responder">
+                                <i class="bi bi-chat-dots me-1"></i> Responder ${temNotif ? '●' : ''}
+                            </button>` : ''}
+                    </div>`;
+            });
+        });
+    };
+</script>
+</body>
+</html>

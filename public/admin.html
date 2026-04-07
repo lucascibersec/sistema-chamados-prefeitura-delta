@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão em Tecnologia</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0d5244; 
+            --bg-body: #cbd5e1;
+            --dark-blue: #0f172a;
+            --border-color: #cbd5e1;
+            --text-main: #334155;
+        }
+
+        body { 
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .header-adm { 
+            background: #ffffff; 
+            color: var(--primary-color); 
+            padding: 10px 30px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            border-bottom: 3px solid var(--primary-color); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .card-chamado { 
+            background: white; 
+            border-radius: 10px; 
+            min-height: 520px; 
+            transition: all 0.3s ease; 
+            position: relative; 
+            padding: 15px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex; 
+            flex-direction: column; 
+            border: 1px solid var(--border-color);
+        }
+
+        .sla-bar { height: 5px; width: 100%; position: absolute; top: 0; left: 0; border-radius: 10px 10px 0 0; }
+        .bg-urg-alta { background: #ef4444; }
+        .bg-urg-media { background: #f59e0b; }
+        .bg-urg-baixa { background: #10b981; }
+
+        .desc-box { 
+            background: #f8fafc; padding: 10px; border-radius: 6px; 
+            border-left: 3px solid var(--primary-color); margin: 8px 0; 
+            color: #334155; line-height: 1.3; font-size: 0.75rem;
+        }
+
+        .chat-box { 
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; 
+            height: 140px; overflow-y: auto; padding: 8px; margin-bottom: 8px; 
+            display: flex; flex-direction: column;
+        }
+
+        .msg-tec { color: var(--primary-color); text-align: right; margin-bottom: 5px; border-bottom: 1px solid #f1f5f9; align-self: flex-end; width: 95%; font-weight: 600; font-size: 0.75rem; }
+        .msg-user { color: #444; text-align: left; margin-bottom: 5px; background: #f1f5f9; padding: 4px; border-radius: 4px; align-self: flex-start; width: 95%; font-size: 0.75rem; }
+
+        .solucao-box { background: #f0fdf4; padding: 8px; border-radius: 8px; border-left: 4px solid #10b981; color: #166534; font-weight: 600; font-size: 0.75rem; }
+        .tec-resp { font-size: 0.7rem; font-weight: 800; color: var(--primary-color); border-top: 1px solid #eee; padding-top: 8px; margin-top: auto; text-transform: uppercase; }
+
+        #modalFinalizar {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; padding: 25px; border-radius: 12px; z-index: 9999; 
+            box-shadow: 0 0 100px rgba(0,0,0,0.5); width: 400px; border: 1px solid var(--border-color);
+        }
+
+        .notif-msg { 
+            position: absolute; top: 40px; right: 15px; 
+            background: #ef4444; color: white; padding: 2px 10px; 
+            border-radius: 50px; font-weight: bold; font-size: 0.65rem; 
+            animation: pulse 1.5s infinite; z-index: 10; 
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+<div class="header-adm d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="fw-bold fs-6"><b>Gestão</b> <span><b>de Chamados</b></span> <span id="contadorTotal" class="badge bg-dark ms-1">0</span></div>
+    <div class="d-flex gap-2 align-items-center">
+        <input type="date" id="filtroData" class="form-control form-control-sm w-auto">
+        <select id="filtroStatus" class="form-select form-select-sm w-auto">
+            <option style="font-weight: 900; color: #000;" value="Pendentes">⚠️ Pendentes</option>
+            <option style="font-weight: 900; color: #000;" value="Minha Fila">👤 Minha Fila</option>
+            <option style="font-weight: 900; color: #000;" value="Abertos">✨ Novos</option>
+            <option style="font-weight: 900; color: #000;" value="Concluído">📚 Histórico</option>
+        </select>
+        <button id="btnPDF" class="btn btn-sm btn-outline-dark fw-bold">GERAR RELATÓRIO PDF</button>
+        <span id="tecLabel" class="badge bg-white text-dark border p-2"></span>
+        <button onclick="sair()" class="btn btn-sm btn-danger fw-bold">SAIR</button>
+    </div>
+</div>
+
+<div class="container-fluid p-3">
+    <div id="gridChamados" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 g-3"></div>
+</div>
+
+<div id="modalFinalizar">
+    <h6 class="fw-bold mb-2">Finalizar Atendimento</h6>
+    <textarea id="solucaoTecnica" class="form-control mb-3" placeholder="O que foi feito?" rows="3"></textarea>
+    <div class="d-flex gap-2">
+        <button id="btnSalvarConclusao" class="btn btn-sm btn-success flex-grow-1 fw-bold">FINALIZAR</button>
+        <button onclick="document.getElementById('modalFinalizar').style.display='none'" class="btn btn-sm btn-light border flex-grow-1 fw-bold">VOLTAR</button>
+    </div>
+</div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, serverTimestamp, getDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const tNome = localStorage.getItem('tecnicoAtivo');
+    if (!tNome) window.location.replace('login.html');
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyCpXcAHwayq8AN3VR7Sj7VYteAwSluKovo", 
+        authDomain: "sistema-chamados-c3e61.firebaseapp.com", 
+        projectId: "sistema-chamados-c3e61", 
+        storageBucket: "sistema-chamados-c3e61.firebasestorage.app", 
+        appId: "1:782902435377:web:937600794bd6b7c0397f10" 
+    };
+    
+    const db = getFirestore(initializeApp(firebaseConfig));
+    let idEmFoco = "";
+
+    document.getElementById('tecLabel').innerText = "OP: " + tNome;
+    window.sair = () => { localStorage.clear(); window.location.href = 'login.html'; };
+
+    window.capturar = async (id) => { 
+        if(confirm("Capturar chamado?")) {
+            const docRef = doc(db, "chamados", id);
+            const snap = await getDoc(docRef);
+            const dados = snap.data();
+            
+            // Grava o técnico original no rastro se for a primeira captura
+            const rastro = { 
+                status: "Em Atendimento", 
+                tecnicoResponsavel: tNome 
+            };
+            if (!dados.tecnicoOriginal) {
+                rastro.tecnicoOriginal = tNome;
+            }
+            
+            await updateDoc(docRef, rastro);
+        }
+    };
+
+    window.enviarMsg = async (id, msgsAtuais) => {
+        const msg = prompt("Sua resposta:");
+        if(msg) {
+            const agora = new Date().toLocaleString('pt-BR');
+            const novas = (msgsAtuais || []).map(m => ({...m, lido: true}));
+            novas.push({ autor: tNome, texto: msg, data: agora, lido: false }); 
+            await updateDoc(doc(db, "chamados", id), { mensagens: novas });
+        }
+    };
+
+    window.transferir = async (id) => {
+        const novo = prompt("Nome do técnico:");
+        if(novo) {
+            const r = doc(db, "chamados", id);
+            const sn = await getDoc(r);
+            const ms = sn.data().mensagens || [];
+            const agora = new Date().toLocaleString('pt-BR');
+            // Registra a transferência no chat para rastro histórico
+            ms.push({ autor: "Sistema", texto: `🔄 TRANSFERIDO: De ${tNome} para ${novo}`, data: agora, lido: false });
+            await updateDoc(r, { tecnicoResponsavel: novo, mensagens: ms });
+        }
+    };
+
+    window.abrirModalFinalizar = (id) => { idEmFoco = id; document.getElementById('modalFinalizar').style.display = 'block'; };
+
+    document.getElementById('btnSalvarConclusao').onclick = async () => {
+        const sol = document.getElementById('solucaoTecnica').value.trim();
+        if(!sol) return alert("ERRO: Você precisa descrever a solução técnica para finalizar o chamado!");
+        
+        const docRef = doc(db, "chamados", idEmFoco);
+        const snap = await getDoc(docRef);
+        const novasMsgs = (snap.data().mensagens || []).map(m => ({...m, lido: true}));
+        const agora = new Date().toLocaleString('pt-BR');
+        novasMsgs.push({ autor: "Sistema", texto: `✅ FINALIZADO EM ${agora}: ${sol}`, data: agora, lido: false });
+        
+        await updateDoc(docRef, { 
+            status: "Concluído", 
+            solucao: sol, 
+            dataFinalizacao: serverTimestamp(), 
+            mensagens: novasMsgs 
+        });
+        
+        document.getElementById('modalFinalizar').style.display = 'none';
+        document.getElementById('solucaoTecnica').value = "";
+    };
+
+    async function carregarLogo(url) {
+        return new Promise((resolve) => {
+            const img = new Image(); img.crossOrigin = 'Anonymous';
+            img.onload = () => {
+                const canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height;
+                const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            img.onerror = () => resolve(null); img.src = url;
+        });
+    }
+
+    document.getElementById('btnPDF').onclick = async () => {
+        const btn = document.getElementById('btnPDF'); btn.disabled = true; btn.innerText = "GERANDO...";
+        try {
+            const { jsPDF } = window.jspdf;
+            const docPDF = new jsPDF('l', 'mm', 'a4');
+            const logoBase64 = await carregarLogo('logo.png.jpeg');
+            if (logoBase64) { docPDF.addImage(logoBase64, 'JPEG', 14, 5, 40, 15); }
+
+            docPDF.setFontSize(16);
+            docPDF.text("Relatório de Chamados Delta Cyber Security", 60, 15);
+            docPDF.setFontSize(10);
+            docPDF.text("Extraído em: " + new Date().toLocaleString('pt-BR'), 60, 22);
+
+            const q = query(collection(db, "chamados"), where("status", "==", "Concluído"), orderBy("dataCriacao", "asc"));
+            const snap = await getDocs(q);
+            
+            const rows = snap.docs.map(d => {
+                const c = d.data();
+                const historico = (c.mensagens || []).map(m => `[${m.data || '---'}] ${m.autor}: ${m.texto}`).join('\n');
+                
+                // LÓGICA DE RASTREIO NO PDF
+                const rastroTecnico = (c.tecnicoOriginal && c.tecnicoOriginal !== c.tecnicoResponsavel) 
+                    ? `${c.tecnicoOriginal} -> ${c.tecnicoResponsavel}` 
+                    : (c.tecnicoResponsavel || '---');
+
+                return [
+                    c.dataCriacao?.toDate().toLocaleString('pt-BR') || '---',
+                    c.dataFinalizacao?.toDate().toLocaleString('pt-BR') || '---',
+                    `${c.nome} ${c.sobrenome}`,
+                    c.departamento,
+                    c.titulo,
+                    c.descricao || 'Sem descrição',
+                    rastroTecnico, // Exibe o rastro aqui
+                    historico
+                ];
+            });
+
+            docPDF.autoTable({
+                startY: 28,
+                head: [['Abertura', 'Finalização', 'Usuário', 'Setor', 'Assunto', 'Descrição', 'Técnico', 'Interações']],
+                body: rows,
+                styles: { fontSize: 7, cellPadding: 2 },
+                headStyles: { fillColor: [26, 188, 156] },
+                columnStyles: { 5: { cellWidth: 45 }, 7: { cellWidth: 50 } }
+            });
+            docPDF.save(`Relatorio_Delta_${Date.now()}.pdf`);
+        } catch (e) { alert("Erro ao gerar PDF."); } finally { btn.disabled = false; btn.innerText = "GERAR RELATÓRIO PDF"; }
+    };
+
+    function monitorar() {
+        const filtro = document.getElementById('filtroStatus').value;
+        const dataFiltro = document.getElementById('filtroData').value;
+        onSnapshot(query(collection(db, "chamados"), orderBy("dataCriacao", "desc")), (snapshot) => {
+            const grid = document.getElementById('gridChamados'); grid.innerHTML = '';
+            let contador = 0;
+            snapshot.forEach((docSnap) => {
+                const c = docSnap.data(); const id = docSnap.id;
+                const dt = c.dataCriacao?.toDate();
+                let dtF = dt ? `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}` : "";
+                let exibir = (filtro === "Pendentes" && c.status !== "Concluído") || (filtro === "Minha Fila" && c.tecnicoResponsavel === tNome) || (filtro === "Abertos" && !c.tecnicoResponsavel) || (filtro === "Concluído" && c.status === "Concluído");
+                if (dataFiltro && dtF !== dataFiltro) exibir = false;
+
+                if (exibir) {
+                    contador++; const msgs = c.mensagens || [];
+                    const nLidas = msgs.filter(m => m.autor !== tNome && m.autor !== "Sistema" && !m.lido).length;
+                    
+                    // Rastro visual rápido no card
+                    const rastroCard = (c.tecnicoOriginal && c.tecnicoOriginal !== c.tecnicoResponsavel) 
+                        ? `<br><small class="text-muted">Iniciado por: ${c.tecnicoOriginal}</small>` 
+                        : '';
+
+                    grid.innerHTML += `<div class="col"><div class="card card-chamado">
+                        <div class="sla-bar bg-urg-${c.urgencia.toLowerCase()}"></div>
+                        ${nLidas > 0 ? `<div class="notif-msg">Alerta !! (${nLidas})</div>` : ''}
+                        <div class="d-flex justify-content-between mb-1"><b>${c.titulo}</b> <span class="badge bg-light text-dark border small">${dt ? dt.toLocaleDateString() : ''}</span></div>
+                        <div class="small mb-1"><i class="bi bi-person-fill"></i> <b>${c.nome} ${c.sobrenome}</b><br><i class="bi bi-building"></i> <span class="text-muted">${c.departamento}</span></div>
+                        <div class="desc-box">${c.descricao}</div>
+                        <div class="chat-box small">${msgs.map(m => `<div class="${m.autor === tNome ? 'msg-tec' : 'msg-user'}"><b>${m.autor}:</b> ${m.texto} <br><small style="font-size:0.6rem; opacity:0.7;">${m.data || ''}</small></div>`).join('')}</div>
+                        <div class="tec-resp">RESP: <span style="font-weight: 900; color: #000;">${c.tecnicoResponsavel || 'PENDENTE'}</span> ${rastroCard}</div>
+                        <div class="mt-2 d-flex flex-column gap-1">
+                            ${!c.tecnicoResponsavel ? `<button class="btn btn-primary btn-sm btn-acao w-100" onclick="window.capturar('${id}')">CAPTURAR</button>` : 
+                            (c.tecnicoResponsavel === tNome && c.status !== 'Concluído' ? `<div class="d-flex gap-1"><button onclick="window.enviarMsg('${id}', ${JSON.stringify(msgs).replace(/"/g, '&quot;')})" class="btn btn-info btn-sm text-white flex-grow-1">MSG</button><button class="btn btn-success btn-sm flex-grow-1" onclick="window.abrirModalFinalizar('${id}')">FIM</button></div><button class="btn btn-outline-secondary btn-sm w-100" onclick="window.transferir('${id}')">TRANSFERIR</button>` : '')}
+                        </div>
+                    </div></div>`;
+                }
+            });
+            document.getElementById('contadorTotal').innerText = contador;
+        });
+    }
+    document.getElementById('filtroStatus').onchange = monitorar; document.getElementById('filtroData').onchange = monitorar; monitorar();
+</script>
+</body>
+</html>
