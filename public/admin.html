@@ -244,12 +244,32 @@
         .act-transf{background:transparent;border-color:var(--border-strong);color:var(--text-muted);}
         .act-transf:hover{border-color:var(--text-muted);color:var(--text);}
 
+        /* Anexos (fotos/arquivos) */
+        .anexo-actions{display:flex;gap:8px;margin-bottom:8px;}
+        .anexo-btn{display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);font-weight:600;font-size:.74rem;padding:8px 11px;border-radius:var(--radius-sm);cursor:pointer;transition:.15s ease;font-family:inherit;}
+        .anexo-btn:hover{border-color:var(--accent);color:var(--accent);}
+        .anexo-hint{font-size:.66rem;color:var(--text-soft);margin:0 0 8px;}
+        .anexo-preview{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px;}
+        .anexo-chip{display:flex;align-items:center;gap:5px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 7px 4px 4px;font-size:.68rem;max-width:200px;}
+        .anexo-thumb{width:26px;height:26px;border-radius:6px;object-fit:cover;flex-shrink:0;}
+        .anexo-file-ico{font-size:1rem;color:var(--text-muted);width:26px;text-align:center;flex-shrink:0;}
+        .anexo-nome{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px;color:var(--text);}
+        .anexo-tam{color:var(--text-soft);flex-shrink:0;}
+        .anexo-remove{background:transparent;border:none;color:var(--text-soft);cursor:pointer;display:grid;place-items:center;padding:2px;border-radius:6px;margin-left:2px;}
+        .anexo-remove:hover{color:var(--red);}
+        .anexos-lista{display:flex;flex-wrap:wrap;gap:7px;margin:7px 0;}
+        .anexo-item{display:flex;align-items:center;gap:5px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 9px 4px 4px;font-size:.68rem;text-decoration:none;color:var(--text);max-width:180px;}
+        .anexo-item:hover{border-color:var(--accent);color:var(--accent);}
+        .anexo-item .anexo-thumb{width:28px;height:28px;}
+        .anexo-item-nome{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .anexo-erro{font-size:.68rem;color:var(--red);margin-bottom:6px;}
+
         /* empty state */
         .empty-state{grid-column:1/-1;text-align:center;padding:52px 20px;color:var(--text-soft);display:flex;flex-direction:column;align-items:center;gap:10px;}
         .empty-state i{font-size:2.4rem;opacity:.35;}
 
         /* Modals */
-        #modalFinalizar,#modalTransferir{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);padding:22px;border-radius:var(--radius);z-index:9999;box-shadow:0 24px 80px rgba(0,0,0,.45);width:400px;max-width:calc(100vw - 32px);border:1px solid var(--border);}
+        #modalFinalizar,#modalTransferir,#modalResponder{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);padding:22px;border-radius:var(--radius);z-index:9999;box-shadow:0 24px 80px rgba(0,0,0,.45);width:400px;max-width:calc(100vw - 32px);border:1px solid var(--border);max-height:85vh;overflow-y:auto;}
         .modal-title{font-size:.98rem;font-weight:700;margin-bottom:12px;}
         .modal-sub{font-size:.78rem;color:var(--text-muted);margin-bottom:12px;}
         .modal-actions{display:flex;gap:10px;margin-top:14px;}
@@ -496,6 +516,26 @@
     </div>
 </div>
 
+<!-- Modal Responder -->
+<div id="modalResponder">
+    <h6 class="modal-title">Responder chamado</h6>
+    <textarea id="respTecTexto" class="adm-textarea" placeholder="Escreva sua resposta..." rows="3" style="width:100%;"></textarea>
+    <div style="margin-top:10px;">
+        <div class="anexo-actions">
+            <button type="button" class="anexo-btn" id="btnAnexarRespTec"><i class="bi bi-paperclip"></i> Anexar arquivo</button>
+            <button type="button" class="anexo-btn" id="btnFotoRespTec"><i class="bi bi-camera-fill"></i> Tirar foto</button>
+        </div>
+        <input type="file" id="inputArquivoRespTec" multiple style="display:none;">
+        <input type="file" id="inputFotoRespTec" accept="image/*" capture="environment" style="display:none;">
+        <div id="respTecAnexoErro" class="anexo-erro" style="display:none;"></div>
+        <div id="previewAnexosRespTec" class="anexo-preview"></div>
+    </div>
+    <div class="modal-actions">
+        <button id="btnEnviarRespTec" class="act act-primary flex1">Enviar</button>
+        <button onclick="document.getElementById('modalResponder').style.display='none'" class="act act-transf flex1">Cancelar</button>
+    </div>
+</div>
+
 <!-- Modal Transferir -->
 <div id="modalTransferir">
     <h6 class="modal-title">Transferir chamado</h6>
@@ -563,6 +603,7 @@ updateClock();setInterval(updateClock,10000);
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import{getFirestore,collection,onSnapshot,query,orderBy,doc,updateDoc,serverTimestamp,getDoc,getDocs,setDoc,where,deleteDoc}from"https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import{getAuth,onAuthStateChanged,signOut,sendPasswordResetEmail,setPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import{adicionarArquivos,renderPreview,subirAnexos,renderAnexosEnviados}from"./js/anexos.js";
 
 const app=initializeApp({apiKey:"AIzaSyCpXcAHwayq8AN3VR7Sj7VYteAwSluKovo",authDomain:"sistema-chamados-c3e61.firebaseapp.com",projectId:"sistema-chamados-c3e61",storageBucket:"sistema-chamados-c3e61.firebasestorage.app",appId:"1:782902435377:web:937600794bd6b7c0397f10"});
 const db=getFirestore(app);
@@ -694,11 +735,12 @@ function buildCardHtml(c,id){
         </div>
         <div class="card-details">
             <div class="desc-box">${c.descricao}</div>
-            <div class="chat-box">${msgs.map(m=>`<div class="${m.autor===tNome?'msg-tec':'msg-user'}"><b>${m.autor}:</b> ${m.texto}<br><small class="msg-data">${m.data||''}</small></div>`).join('')}</div>
+            ${renderAnexosEnviados(c.anexos)}
+            <div class="chat-box">${msgs.map(m=>`<div class="${m.autor===tNome?'msg-tec':'msg-user'}"><b>${m.autor}:</b> ${m.texto}<br><small class="msg-data">${m.data||''}</small>${renderAnexosEnviados(m.anexos)}</div>`).join('')}</div>
             ${rastroCard}
             <div class="card-actions">
                 ${!resp?`<button class="act act-primary" onclick="event.stopPropagation();window.capturar('${id}')">Capturar chamado</button>`
-                    :(resp===tNome&&!concluido?`<div class="act-row"><button onclick="event.stopPropagation();window.enviarMsg('${id}',${JSON.stringify(msgs).replace(/"/g,'&quot;')})" class="act act-msg">Mensagem</button><button class="act act-fim" onclick="event.stopPropagation();window.abrirModalFinalizar('${id}')">Finalizar</button></div><button class="act act-transf" onclick="event.stopPropagation();window.abrirModalTransferir('${id}')">Transferir</button>`:'')}
+                    :(resp===tNome&&!concluido?`<div class="act-row"><button onclick="event.stopPropagation();window.abrirModalResponder('${id}',${JSON.stringify(msgs).replace(/"/g,'&quot;')})" class="act act-msg">Mensagem</button><button class="act act-fim" onclick="event.stopPropagation();window.abrirModalFinalizar('${id}')">Finalizar</button></div><button class="act act-transf" onclick="event.stopPropagation();window.abrirModalTransferir('${id}')">Transferir</button>`:'')}
             </div>
         </div>
     </div>`;
@@ -948,9 +990,55 @@ window.capturar=async(id)=>{
         await updateDoc(docRef,rastro);
     }
 };
-window.enviarMsg=async(id,msgsAtuais)=>{
-    const msg=prompt("Sua resposta:");
-    if(msg){const agora=new Date().toLocaleString('pt-BR');const novas=(msgsAtuais||[]).map(m=>({...m,lido:true}));novas.push({autor:tNome,texto:msg,data:agora,lido:false});await updateDoc(doc(db,"chamados",id),{mensagens:novas});}
+// ===== Modal Responder (mensagem + anexos) =====
+let arquivosRespTec=[];
+const previewAnexosRespTec=document.getElementById('previewAnexosRespTec');
+const respTecAnexoErro=document.getElementById('respTecAnexoErro');
+function redesenharPreviewRespTec(){previewAnexosRespTec.innerHTML=renderPreview(arquivosRespTec,'removerAnexoRespTec');}
+window.removerAnexoRespTec=(i)=>{arquivosRespTec.splice(i,1);redesenharPreviewRespTec();};
+
+let idRespTec="";
+let msgsRespTec=[];
+window.abrirModalResponder=(id,msgsAtuais)=>{
+    idRespTec=id;
+    msgsRespTec=msgsAtuais||[];
+    arquivosRespTec=[];
+    redesenharPreviewRespTec();
+    respTecAnexoErro.style.display='none';
+    document.getElementById('respTecTexto').value='';
+    document.getElementById('modalResponder').style.display='block';
+};
+document.getElementById('btnAnexarRespTec').onclick=()=>document.getElementById('inputArquivoRespTec').click();
+document.getElementById('btnFotoRespTec').onclick=()=>document.getElementById('inputFotoRespTec').click();
+function selecionarArquivosRespTec(fileList){
+    const{arquivos,erros}=adicionarArquivos(fileList,arquivosRespTec);
+    arquivosRespTec=arquivos;redesenharPreviewRespTec();
+    respTecAnexoErro.style.display=erros.length?'block':'none';
+    respTecAnexoErro.textContent=erros.join(' ');
+}
+document.getElementById('inputArquivoRespTec').onchange=(e)=>{selecionarArquivosRespTec(e.target.files);e.target.value='';};
+document.getElementById('inputFotoRespTec').onchange=(e)=>{selecionarArquivosRespTec(e.target.files);e.target.value='';};
+
+document.getElementById('btnEnviarRespTec').onclick=async()=>{
+    const txt=document.getElementById('respTecTexto').value.trim();
+    if(!txt&&!arquivosRespTec.length)return;
+    const btn=document.getElementById('btnEnviarRespTec');
+    btn.disabled=true;btn.innerText='Enviando...';
+    try{
+        const anexos=arquivosRespTec.length?await subirAnexos(await auth.currentUser.getIdToken(),idRespTec,'mensagens',arquivosRespTec):[];
+        const agora=new Date().toLocaleString('pt-BR');
+        const novas=(msgsRespTec||[]).map(m=>({...m,lido:true}));
+        const nova={autor:tNome,texto:txt||'(anexo enviado)',data:agora,lido:false};
+        if(anexos.length)nova.anexos=anexos;
+        novas.push(nova);
+        await updateDoc(doc(db,"chamados",idRespTec),{mensagens:novas});
+        document.getElementById('modalResponder').style.display='none';
+    }catch(e){
+        console.error('[admin] falha ao responder',e);
+        alert('Não foi possível enviar a mensagem.');
+    }finally{
+        btn.disabled=false;btn.innerText='Enviar';
+    }
 };
 window.abrirModalTransferir=(id)=>{idEmFoco=id;document.getElementById('selectNovoAdm').value="";document.getElementById('modalTransferir').style.display='block';};
 document.getElementById('btnConfirmarTransferencia').onclick=async()=>{

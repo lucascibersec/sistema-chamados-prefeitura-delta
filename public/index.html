@@ -29,6 +29,7 @@
             --amber: #d97706; --amber-soft: rgba(217,119,6,.12);
             --shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 40px rgba(16,24,40,.08);
             --radius: 16px; --radius-sm: 10px;
+            --brand-panel-w: 46%;
         }
         html[data-theme="dark"] {
             --accent: #6366f1; --accent-hover: #818cf8;
@@ -41,29 +42,65 @@
             --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 50px rgba(0,0,0,.55);
         }
         * { box-sizing: border-box; }
+        html, body { height: 100%; }
         body {
-            background: radial-gradient(1200px 600px at 85% -10%, var(--accent-soft), transparent 60%),
-                        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
-            background-attachment: fixed; font-family: 'Inter', sans-serif; color: var(--text);
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            margin: 0; padding: 20px; transition: background-color .3s ease, color .3s ease;
+            background: var(--bg-1); font-family: 'Inter', sans-serif; color: var(--text);
+            margin: 0; transition: background-color .3s ease, color .3s ease;
         }
+
+        /* ===== Layout em duas colunas (split-screen) ===== */
+        .auth-shell { display: flex; min-height: 100vh; }
+
+        /* ----- Painel de marca (esquerda) ----- */
+        .brand-panel {
+            position: relative; flex: 0 0 var(--brand-panel-w); max-width: 620px; overflow: hidden;
+            display: flex; flex-direction: column; color: #fff;
+            background: radial-gradient(1100px 700px at 15% -10%, rgba(255,255,255,.16), transparent 55%),
+                        linear-gradient(160deg, var(--accent) 0%, #1e1b4b 130%);
+        }
+        .brand-panel-bg {
+            position: absolute; inset: 0; background-image: url('img/hex-white-bg.jpg');
+            background-size: cover; background-position: center; opacity: .16; mix-blend-mode: overlay;
+        }
+        .brand-panel-content {
+            position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between;
+            height: 100%; padding: 52px 48px;
+        }
+        .brand-panel-top { display: flex; align-items: center; gap: 12px; }
+        .brand-panel-top img { width: 38px; height: 38px; flex-shrink: 0; }
+        .brand-panel-top span { font-weight: 800; font-size: 1.05rem; letter-spacing: -.01em; }
+        .brand-panel-mid h1 { font-size: 2.15rem; font-weight: 800; line-height: 1.16; letter-spacing: -.03em; margin: 0 0 14px; }
+        .brand-panel-mid p { font-size: .95rem; line-height: 1.65; color: rgba(255,255,255,.82); max-width: 380px; margin: 0 0 34px; }
+        .brand-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 15px; }
+        .brand-features li { display: flex; align-items: center; gap: 12px; font-size: .85rem; font-weight: 600; color: rgba(255,255,255,.94); }
+        .brand-features i {
+            width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.14);
+            display: grid; place-items: center; font-size: .95rem; flex-shrink: 0;
+        }
+        .brand-panel-bottom { font-size: .72rem; color: rgba(255,255,255,.55); }
+
+        @media (max-width: 900px) { .brand-panel { display: none; } }
+
+        /* ----- Painel do formulário (direita) ----- */
+        .form-side { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; position: relative; }
+
         .theme-fab {
             position: fixed; top: 18px; right: 18px; width: 40px; height: 40px; border-radius: 10px;
             border: 1px solid var(--border); background: var(--surface); color: var(--text-muted);
             display: grid; place-items: center; cursor: pointer; font-size: 1.05rem; transition: .2s ease; box-shadow: var(--shadow);
+            z-index: 20;
         }
         .theme-fab:hover { color: var(--text); border-color: var(--border-strong); }
         .login-box {
-            background: var(--surface); border: 1px solid var(--border); padding: 36px 32px;
-            border-radius: var(--radius); width: 100%; max-width: 400px; text-align: center; box-shadow: var(--shadow);
+            background: var(--surface); border: 1px solid var(--border); padding: 40px 36px;
+            border-radius: var(--radius); width: 100%; max-width: 400px; text-align: left; box-shadow: var(--shadow);
         }
-        .brand-badge {
-            width: 52px; height: 52px; border-radius: 14px; background: var(--accent); color: #fff;
-            display: grid; place-items: center; margin: 0 auto 16px; font-size: 1.4rem; box-shadow: 0 8px 20px var(--accent-ring);
+        .login-eyebrow {
+            font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
+            color: var(--accent); margin-bottom: 8px;
         }
-        .brand-logo { font-weight: 700; font-size: 1.3rem; color: var(--text); margin-bottom: 4px; letter-spacing: -0.02em; }
-        .login-subtitle { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-bottom: 28px; }
+        .login-title { font-weight: 800; font-size: 1.4rem; color: var(--text); margin-bottom: 4px; letter-spacing: -0.02em; }
+        .login-subtitle { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-bottom: 26px; }
         .field { margin-bottom: 18px; text-align: left; }
         .field-label { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; display: block; text-align: left; margin-bottom: 6px; }
         .input {
@@ -99,19 +136,16 @@
         }
         .notice-card i { color: var(--amber); font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
         .notice-card strong { color: var(--amber); font-weight: 700; }
-        .link-row { margin-top: 22px; font-size: 0.82rem; color: var(--text-muted); }
+        .link-row { margin-top: 22px; font-size: 0.82rem; color: var(--text-muted); text-align: center; }
         .link-row a { color: var(--accent); font-weight: 600; text-decoration: none; }
         .link-row a:hover { text-decoration: underline; }
-        .tec-link { margin-top: 18px; font-size: 0.74rem; }
-        .tec-link a { color: var(--text-soft); text-decoration: none; }
-        .tec-link a:hover { color: var(--accent); }
-        .footer-text { margin-top: 22px; font-size: 0.74rem; color: var(--text-soft); }
+        .footer-text { margin-top: 22px; font-size: 0.74rem; color: var(--text-soft); text-align: center; }
 
         /* Estilos do Cookie Banner em conformidade com a LGPD e o tema do sistema */
         .cookie-banner {
-            position: fixed; bottom: 20px; left: 20px; right: 20px; 
-            background: var(--surface); border: 1px solid var(--border-strong); 
-            padding: 20px; border-radius: var(--radius); display: none; z-index: 99999; 
+            position: fixed; bottom: 20px; left: 20px; right: 20px;
+            background: var(--surface); border: 1px solid var(--border-strong);
+            padding: 20px; border-radius: var(--radius); display: none; z-index: 99999;
             box-shadow: var(--shadow); text-align: left; max-width: 500px; margin-left: auto;
             transition: background-color .3s ease, border-color .3s ease;
         }
@@ -131,53 +165,79 @@
         <i class="bi bi-moon-stars"></i>
     </button>
 
-    <div class="login-box">
-        <div class="brand-badge"><img src="assets/logo-mark-white.svg" alt="Delta Cyber Chamados" width="34" height="34"></div>
-        <div class="brand-logo">Suporte Técnico</div>
-        <p class="login-subtitle">Prefeitura Municipal de Delta · Acesse sua conta</p>
-
-        <div class="notice-card">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <span>Para melhorar a experiência do usuário e a segurança do sistema, agora é necessário ter um <strong>cadastro</strong> com informações básicas para acessar o sistema e abrir chamados.<br>Att, Equipe T.I.</span>
-        </div>
-
-        <div class="field">
-            <label class="field-label" for="email">E-mail</label>
-            <input type="email" id="email" class="input" placeholder="voce@email.com" autocomplete="username">
-        </div>
-
-        <div class="field">
-            <label class="field-label" for="senha">Senha</label>
-            <div class="pass-wrap">
-                <input type="password" id="senha" class="input" placeholder="Sua senha" autocomplete="current-password">
-                <button type="button" class="toggle-eye" id="togglePassword" aria-label="Mostrar senha">
-                    <i class="bi bi-eye-slash" id="iconEye"></i>
-                </button>
+    <div class="auth-shell">
+        <!-- Painel de marca institucional -->
+        <aside class="brand-panel">
+            <div class="brand-panel-bg"></div>
+            <div class="brand-panel-content">
+                <div class="brand-panel-top">
+                    <img src="assets/logo-mark-white.svg" alt="Delta Cyber Chamados">
+                    <span>Delta Cyber Security</span>
+                </div>
+                <div class="brand-panel-mid">
+                    <h1>Central de Suporte Técnico da Prefeitura de Delta</h1>
+                    <p>Abra, acompanhe e resolva chamados de TI com segurança e rastreabilidade total, em um único lugar.</p>
+                    <ul class="brand-features">
+                        <li><i class="bi bi-shield-check"></i> Registros auditáveis e imutáveis</li>
+                        <li><i class="bi bi-lightning-charge-fill"></i> Atendimento e SLA em tempo real</li>
+                        <li><i class="bi bi-paperclip"></i> Anexe fotos e arquivos ao chamado</li>
+                    </ul>
+                </div>
+                <div class="brand-panel-bottom">&copy; 2026 Delta Cyber Security · Gestão em Tecnologia</div>
             </div>
-        </div>
+        </aside>
 
-        <button id="btnEntrar" class="btn-logar">Entrar</button>
+        <!-- Formulário de login -->
+        <main class="form-side">
+            <div class="login-box">
+                <div class="login-eyebrow">Portal do solicitante</div>
+                <div class="login-title">Bem-vindo de volta</div>
+                <p class="login-subtitle">Acesse sua conta para abrir e acompanhar chamados.</p>
 
-        <div id="msgBox"></div>
+                <div class="notice-card">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>Para melhorar a experiência do usuário e a segurança do sistema, agora é necessário ter um <strong>cadastro</strong> com informações básicas para acessar o sistema e abrir chamados.<br>Att, Equipe T.I.</span>
+                </div>
 
-        <div class="link-row">
-            <a href="#" id="linkEsqueciSenha">Esqueceu a senha?</a>
-        </div>
+                <div class="field">
+                    <label class="field-label" for="email">E-mail</label>
+                    <input type="email" id="email" class="input" placeholder="voce@email.com" autocomplete="username">
+                </div>
 
-        <div id="painelEsqueci" style="display:none;">
-            <div class="field" style="margin-top:14px;">
-                <label class="field-label" for="emailReset">Confirme seu e-mail de acesso</label>
-                <input type="email" id="emailReset" class="input" placeholder="voce@email.com" autocomplete="username">
+                <div class="field">
+                    <label class="field-label" for="senha">Senha</label>
+                    <div class="pass-wrap">
+                        <input type="password" id="senha" class="input" placeholder="Sua senha" autocomplete="current-password">
+                        <button type="button" class="toggle-eye" id="togglePassword" aria-label="Mostrar senha">
+                            <i class="bi bi-eye-slash" id="iconEye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="btnEntrar" class="btn-logar">Entrar</button>
+
+                <div id="msgBox"></div>
+
+                <div class="link-row">
+                    <a href="#" id="linkEsqueciSenha">Esqueceu a senha?</a>
+                </div>
+
+                <div id="painelEsqueci" style="display:none;">
+                    <div class="field" style="margin-top:14px;">
+                        <label class="field-label" for="emailReset">Confirme seu e-mail de acesso</label>
+                        <input type="email" id="emailReset" class="input" placeholder="voce@email.com" autocomplete="username">
+                    </div>
+                    <button id="btnSolicitarReset" class="btn-logar">Solicitar redefinição</button>
+                    <div class="link-row"><a href="#" id="linkCancelarReset">Cancelar</a></div>
+                </div>
+
+                <div class="link-row">
+                    Ainda não tem cadastro? <a href="cadastro.html">Criar cadastro</a>
+                </div>
+
+                <div class="footer-text">&copy; 2026 Delta Cyber Security · Gestão em Tecnologia</div>
             </div>
-            <button id="btnSolicitarReset" class="btn-logar">Solicitar redefinição</button>
-            <div class="link-row"><a href="#" id="linkCancelarReset">Cancelar</a></div>
-        </div>
-
-        <div class="link-row">
-            Ainda não tem cadastro? <a href="cadastro.html">Criar cadastro</a>
-        </div>
-
-        <div class="footer-text">&copy; 2026 Delta Cyber Security · Gestão em Tecnologia</div>
+        </main>
     </div>
 
     <div id="bannerCookies" class="cookie-banner">

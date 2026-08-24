@@ -176,6 +176,47 @@
         .app-footer { text-align: center; font-size: 0.74rem; color: var(--text-soft); padding: 24px 12px 6px; }
         .loading { text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 40px 0; }
 
+        /* Anexos (fotos/arquivos) */
+        .anexo-actions { display: flex; gap: 8px; margin-bottom: 8px; }
+        .anexo-btn { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border);
+                     color: var(--text-muted); font-weight: 600; font-size: 0.8rem; padding: 9px 12px; border-radius: var(--radius-sm);
+                     cursor: pointer; transition: .15s ease; font-family: inherit; }
+        .anexo-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .anexo-hint { font-size: 0.7rem; color: var(--text-soft); margin: 0 0 10px; }
+        .anexo-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+        .anexo-chip { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border);
+                      border-radius: var(--radius-sm); padding: 5px 8px 5px 5px; font-size: 0.74rem; max-width: 220px; }
+        .anexo-thumb { width: 30px; height: 30px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+        .anexo-file-ico { font-size: 1.1rem; color: var(--text-muted); width: 30px; text-align: center; flex-shrink: 0; }
+        .anexo-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100px; color: var(--text); }
+        .anexo-tam { color: var(--text-soft); flex-shrink: 0; }
+        .anexo-remove { background: transparent; border: none; color: var(--text-soft); cursor: pointer; display: grid; place-items: center;
+                        padding: 2px; border-radius: 6px; margin-left: 2px; }
+        .anexo-remove:hover { color: var(--red); }
+        .anexos-lista { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+        .anexo-item { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border);
+                      border-radius: var(--radius-sm); padding: 5px 10px 5px 5px; font-size: 0.74rem; text-decoration: none; color: var(--text); max-width: 200px; }
+        .anexo-item:hover { border-color: var(--accent); color: var(--accent); }
+        .anexo-item .anexo-thumb { width: 32px; height: 32px; }
+        .anexo-item-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .anexo-erro { font-size: 0.74rem; color: var(--red); margin-bottom: 8px; }
+
+        /* Modal "Responder" (mensagem + anexos) */
+        .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(10,12,16,.5); z-index: 9998; }
+        .modal-backdrop.open { display: block; }
+        #modalResponder { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+                          background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+                          padding: 20px; width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto;
+                          z-index: 9999; box-shadow: 0 24px 80px rgba(0,0,0,.4); }
+        #modalResponder.open { display: block; }
+        .modal-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+        .flex1 { flex: 1; }
+        .btn-secondary-app { width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+                              padding: 13px; font-weight: 700; font-size: 0.9rem; border-radius: var(--radius-sm); cursor: pointer;
+                              transition: .2s ease; font-family: inherit; }
+        .btn-secondary-app:hover { border-color: var(--border-strong); }
+
         @media (max-width: 480px) { .grid-2 { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -300,6 +341,19 @@
                     </div>
                 </div>
 
+                <div class="field">
+                    <label class="field-label">Anexos (opcional)</label>
+                    <div class="anexo-actions">
+                        <button type="button" class="anexo-btn" id="btnAnexarArquivo"><i class="bi bi-paperclip"></i> Anexar arquivo</button>
+                        <button type="button" class="anexo-btn" id="btnTirarFoto"><i class="bi bi-camera-fill"></i> Tirar foto</button>
+                    </div>
+                    <div class="anexo-hint">Fotos, PDF ou documentos — até 5 arquivos, 10MB cada.</div>
+                    <input type="file" id="inputArquivo" multiple style="display:none;">
+                    <input type="file" id="inputFoto" accept="image/*" capture="environment" style="display:none;">
+                    <div id="anexoErro" class="anexo-erro" style="display:none;"></div>
+                    <div id="previewAnexos" class="anexo-preview"></div>
+                </div>
+
                 <button type="submit" id="btnRegistrar" class="btn-primary-app">Registrar chamado</button>
             </form>
         </div>
@@ -313,6 +367,29 @@
         <div id="listaChamados"></div>
 
         <footer class="app-footer">&copy; 2026 Prefeitura de Delta · Gestão em Tecnologia</footer>
+    </div>
+</div>
+
+<!-- Modal "Responder" (mensagem + anexos) -->
+<div class="modal-backdrop" id="modalRespBackdrop"></div>
+<div id="modalResponder">
+    <h6 class="modal-title">Responder chamado</h6>
+    <div class="field">
+        <textarea id="respTexto" class="textarea" rows="3" placeholder="Escreva sua mensagem..."></textarea>
+    </div>
+    <div class="field">
+        <div class="anexo-actions">
+            <button type="button" class="anexo-btn" id="btnAnexarResposta"><i class="bi bi-paperclip"></i> Anexar arquivo</button>
+            <button type="button" class="anexo-btn" id="btnFotoResposta"><i class="bi bi-camera-fill"></i> Tirar foto</button>
+        </div>
+        <input type="file" id="inputArquivoResposta" multiple style="display:none;">
+        <input type="file" id="inputFotoResposta" accept="image/*" capture="environment" style="display:none;">
+        <div id="respAnexoErro" class="anexo-erro" style="display:none;"></div>
+        <div id="previewAnexosResposta" class="anexo-preview"></div>
+    </div>
+    <div class="modal-actions">
+        <button id="btnEnviarResposta" class="btn-primary-app flex1">Enviar</button>
+        <button id="btnCancelarResposta" class="btn-secondary-app flex1">Cancelar</button>
     </div>
 </div>
 
@@ -331,9 +408,10 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, doc, updateDoc, getDoc, onSnapshot, query, where, serverTimestamp }
+    import { getFirestore, collection, doc, setDoc, updateDoc, getDoc, onSnapshot, query, where, serverTimestamp }
         from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { adicionarArquivos, renderPreview, subirAnexos, renderAnexosEnviados } from "./js/anexos.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCpXcAHwayq8AN3VR7Sj7VYteAwSluKovo",
@@ -421,6 +499,7 @@
                         <span class="msg-time">${esc(m.data || '')}</span>
                     </div>
                     <div class="msg-text">${esc(m.texto)}</div>
+                    ${renderAnexosEnviados(m.anexos)}
                 </div>`;
             }).join('')
             : '<div class="chat-empty">Aguardando atendimento...</div>';
@@ -431,6 +510,7 @@
                 <span class="badge-status ${concluido ? 'badge-ok' : 'badge-aberto'}">${esc(c.status)}</span>
             </div>
             <div class="desc-pessoal"><strong><i class="bi bi-info-circle me-1"></i>Sua solicitação:</strong><br>${esc(c.descricao || 'Sem descrição.')}</div>
+            ${renderAnexosEnviados(c.anexos)}
             ${concluido && c.solucao ? `<div class="sol-box"><strong><i class="bi bi-check-circle me-1"></i>Solução aplicada:</strong><br>${esc(c.solucao)}</div>` : ''}
             <div class="chat-box">${chatHtml}</div>
             ${!concluido ? `<button onclick="responder('${id}', ${JSON.stringify(msgs).replace(/"/g, '&quot;')})" class="btn-responder">
@@ -464,18 +544,96 @@
         document.getElementById('formPanel').classList.toggle('open');
     };
 
-    // ===== Responder no chat (dono acrescenta mensagem) =====
-    window.responder = async (id, msgsAtuais) => {
-        const txt = prompt('Sua mensagem:');
-        if (!txt) return;
-        const agora = new Date().toLocaleString('pt-BR');
-        const novas = (msgsAtuais || []).map(m => ({ ...m, lido: true }));
-        novas.push({ autor: perfil.nome, texto: txt, data: agora, lido: false });
+    // ===== Anexos do formulário de abertura =====
+    let arquivosAbertura = [];
+    const previewAnexos = document.getElementById('previewAnexos');
+    const anexoErro = document.getElementById('anexoErro');
+
+    function redesenharPreviewAbertura() {
+        previewAnexos.innerHTML = renderPreview(arquivosAbertura, 'removerAnexoAbertura');
+    }
+    function selecionarArquivosAbertura(fileList) {
+        const { arquivos, erros } = adicionarArquivos(fileList, arquivosAbertura);
+        arquivosAbertura = arquivos;
+        redesenharPreviewAbertura();
+        if (erros.length) { anexoErro.textContent = erros.join(' '); anexoErro.style.display = 'block'; }
+        else { anexoErro.style.display = 'none'; }
+    }
+    window.removerAnexoAbertura = (i) => { arquivosAbertura.splice(i, 1); redesenharPreviewAbertura(); };
+
+    document.getElementById('btnAnexarArquivo').onclick = () => document.getElementById('inputArquivo').click();
+    document.getElementById('btnTirarFoto').onclick = () => document.getElementById('inputFoto').click();
+    document.getElementById('inputArquivo').onchange = (e) => { selecionarArquivosAbertura(e.target.files); e.target.value = ''; };
+    document.getElementById('inputFoto').onchange = (e) => { selecionarArquivosAbertura(e.target.files); e.target.value = ''; };
+
+    // ===== Responder no chat (dono acrescenta mensagem, com anexos opcionais) =====
+    let respId = null;
+    let respMsgsAtuais = [];
+    let arquivosResposta = [];
+    const modalResponder = document.getElementById('modalResponder');
+    const modalRespBackdrop = document.getElementById('modalRespBackdrop');
+    const previewAnexosResposta = document.getElementById('previewAnexosResposta');
+    const respAnexoErro = document.getElementById('respAnexoErro');
+
+    function redesenharPreviewResposta() {
+        previewAnexosResposta.innerHTML = renderPreview(arquivosResposta, 'removerAnexoResposta');
+    }
+    window.removerAnexoResposta = (i) => { arquivosResposta.splice(i, 1); redesenharPreviewResposta(); };
+
+    function fecharModalResposta() {
+        modalResponder.classList.remove('open');
+        modalRespBackdrop.classList.remove('open');
+        document.getElementById('respTexto').value = '';
+        arquivosResposta = [];
+        redesenharPreviewResposta();
+        respAnexoErro.style.display = 'none';
+    }
+
+    window.responder = (id, msgsAtuais) => {
+        respId = id;
+        respMsgsAtuais = msgsAtuais || [];
+        arquivosResposta = [];
+        redesenharPreviewResposta();
+        respAnexoErro.style.display = 'none';
+        document.getElementById('respTexto').value = '';
+        modalResponder.classList.add('open');
+        modalRespBackdrop.classList.add('open');
+    };
+
+    document.getElementById('btnAnexarResposta').onclick = () => document.getElementById('inputArquivoResposta').click();
+    document.getElementById('btnFotoResposta').onclick = () => document.getElementById('inputFotoResposta').click();
+    document.getElementById('inputArquivoResposta').onchange = (e) => {
+        const { arquivos, erros } = adicionarArquivos(e.target.files, arquivosResposta);
+        arquivosResposta = arquivos; redesenharPreviewResposta();
+        respAnexoErro.style.display = erros.length ? 'block' : 'none';
+        respAnexoErro.textContent = erros.join(' ');
+        e.target.value = '';
+    };
+    document.getElementById('inputFotoResposta').onchange = document.getElementById('inputArquivoResposta').onchange;
+    document.getElementById('btnCancelarResposta').onclick = fecharModalResposta;
+    modalRespBackdrop.onclick = fecharModalResposta;
+
+    document.getElementById('btnEnviarResposta').onclick = async () => {
+        const txt = document.getElementById('respTexto').value.trim();
+        if (!txt && !arquivosResposta.length) return;
+        const btn = document.getElementById('btnEnviarResposta');
+        btn.disabled = true; btn.innerText = 'Enviando...';
         try {
-            await updateDoc(doc(db, 'chamados', id), { mensagens: novas });
+            const anexos = arquivosResposta.length
+                ? await subirAnexos(await auth.currentUser.getIdToken(), respId, 'mensagens', arquivosResposta)
+                : [];
+            const agora = new Date().toLocaleString('pt-BR');
+            const novas = (respMsgsAtuais || []).map(m => ({ ...m, lido: true }));
+            const nova = { autor: perfil.nome, texto: txt || '(anexo enviado)', data: agora, lido: false };
+            if (anexos.length) nova.anexos = anexos;
+            novas.push(nova);
+            await updateDoc(doc(db, 'chamados', respId), { mensagens: novas });
+            fecharModalResposta();
         } catch (e) {
             console.error('[painel] falha ao responder', e);
             alert('Não foi possível enviar a mensagem.');
+        } finally {
+            btn.disabled = false; btn.innerText = 'Enviar';
         }
     };
 
@@ -504,17 +662,29 @@
 
         btn.disabled = true; btn.innerText = 'Registrando...';
         try {
-            await addDoc(collection(db, 'chamados'), {
+            // Cria o chamado primeiro: a API de anexos só autoriza upload pra chamados
+            // que já existem no Firestore (confere dono/técnico antes de salvar o arquivo).
+            const novoRef = doc(collection(db, 'chamados'));
+            await setDoc(novoRef, {
                 ownerUid: perfil.uid,
                 nome: perfil.nome,
                 sobrenome: perfil.sobrenome,
                 departamento, titulo, descricao, urgencia,
                 status: 'Aberto',
                 dataCriacao: serverTimestamp(),
-                mensagens: []
+                mensagens: [],
+                anexos: []
             });
+            if (arquivosAbertura.length) {
+                btn.innerText = 'Enviando anexos...';
+                const anexos = await subirAnexos(await auth.currentUser.getIdToken(), novoRef.id, 'abertura', arquivosAbertura);
+                await updateDoc(novoRef, { anexos });
+            }
             document.getElementById('formChamado').reset();
             document.getElementById('formPanel').classList.remove('open');
+            arquivosAbertura = [];
+            redesenharPreviewAbertura();
+            anexoErro.style.display = 'none';
             tabAtual = 'andamento';
             document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'andamento'));
         } catch (err) {

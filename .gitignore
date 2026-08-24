@@ -64,6 +64,17 @@ node_modules/
 
 # dotenv environment variables file
 .env
+server/.env
 
 # dataconnect generated files
 .dataconnect
+
+# API de anexos (server/, Flask) — credenciais, ambiente virtual e uploads
+# nunca devem ir pro git.
+server/__pycache__/
+server/*.pyc
+server/.venv/
+server/venv/
+server/*firebase-adminsdk*.json
+server/serviceAccountKey.json
+server/uploads/
