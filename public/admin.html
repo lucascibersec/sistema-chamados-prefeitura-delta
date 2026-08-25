@@ -291,6 +291,60 @@
             .sidebar-backdrop{display:block;position:fixed;inset:var(--topbar-h) 0 0 0;background:rgba(0,0,0,.45);z-index:990;opacity:0;pointer-events:none;transition:opacity .3s;}
             .sidebar-backdrop.show{opacity:1;pointer-events:auto;}
         }
+
+        /* ===== Chats (visão agregada por perfil) ===== */
+        .chat-layout{display:flex;gap:14px;height:calc(100vh - var(--topbar-h) - 108px);min-height:440px;}
+        .chat-list{flex:0 0 300px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow-y:auto;padding:6px;}
+        .chat-item{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:.15s;border:1px solid transparent;}
+        .chat-item:hover{background:var(--surface-2);}
+        .chat-item.ativo{background:var(--accent-soft);border-color:var(--accent-ring);}
+        .chat-avatar{flex:0 0 40px;height:40px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:.85rem;}
+        .chat-item-body{flex:1;min-width:0;}
+        .chat-item-top{display:flex;justify-content:space-between;gap:6px;align-items:center;}
+        .chat-item-nome{font-weight:700;font-size:.82rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .chat-item-prev{font-size:.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+        .chat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+        .chat-dot.on{background:#22c55e;}
+        .chat-dot.off{background:var(--text-soft);}
+        .chat-unread{background:#ef4444;color:#fff;font-size:.62rem;font-weight:800;border-radius:50px;padding:1px 7px;flex-shrink:0;}
+        .chat-main{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;}
+        .chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-soft);text-align:center;padding:20px;}
+        .chat-empty i{font-size:2.2rem;}
+        .chat-conversa{flex:1;display:flex;flex-direction:column;min-height:0;}
+        .chat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+        .chat-header .chat-avatar{flex:0 0 42px;height:42px;}
+        .chat-header-info{flex:1;min-width:0;}
+        .chat-header-nome{font-weight:800;font-size:.95rem;color:var(--text);}
+        .chat-header-sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px;}
+        .chat-chamado-badge{font-size:.68rem;font-weight:700;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);padding:2px 8px;border-radius:50px;}
+        .chat-status{font-size:.66rem;font-weight:800;padding:2px 9px;border-radius:50px;}
+        .chat-status.ativo{background:rgba(34,197,94,.14);color:#16a34a;}
+        .chat-status.fim{background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border);}
+        .chat-header-acoes{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;}
+        .chat-thread{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:var(--surface-2);}
+        .chat-sep{align-self:center;max-width:92%;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.7rem;color:var(--text-muted);margin:10px 0 2px;box-shadow:var(--shadow);}
+        .chat-sep b{color:var(--text);}
+        .chat-sep .chat-sep-status{font-weight:800;}
+        .msg-sistema{align-self:center;font-size:.68rem;color:var(--text-soft);text-align:center;padding:2px 8px;}
+        .chat-msg-wrap{display:flex;flex-direction:column;max-width:78%;}
+        .chat-msg-wrap.mine{align-self:flex-end;align-items:flex-end;}
+        .chat-msg-wrap.theirs{align-self:flex-start;align-items:flex-start;}
+        .chat-msg-autor{font-size:.62rem;font-weight:700;color:var(--text-soft);margin:0 4px 2px;}
+        .chat-composer{border-top:1px solid var(--border);padding:10px 12px;background:var(--surface);}
+        .chat-composer-lock{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--text-soft);font-size:.76rem;padding:8px;text-align:center;}
+        .chat-input-row{display:flex;gap:8px;align-items:flex-end;}
+        .chat-textarea{flex:1;resize:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px 12px;font-family:inherit;font-size:.82rem;max-height:120px;}
+        .chat-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring);}
+        .chat-send-btn{background:var(--accent);color:#fff;border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:1rem;}
+        .chat-send-btn:hover{background:var(--accent-hover);}
+        .chat-send-btn:disabled{opacity:.6;cursor:not-allowed;}
+        .chat-icon-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);width:42px;height:42px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:1rem;}
+        .chat-icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+        @media(max-width:768px){
+            .chat-layout{flex-direction:column;height:auto;}
+            .chat-list{flex:none;max-height:230px;}
+            .chat-main{min-height:440px;}
+        }
     </style>
 </head>
 <body>
@@ -331,6 +385,10 @@
     <a class="nav-item" data-filtro="Concluído" onclick="trocarVisao('Concluído',this)">
         <i class="bi bi-check-circle-fill"></i> <span class="nav-label">Histórico</span>
         <span class="nav-badge verde" id="nb-concluidos">0</span>
+    </a>
+    <a class="nav-item" data-filtro="Chats" onclick="trocarVisao('Chats',this)">
+        <i class="bi bi-chat-dots-fill"></i> <span class="nav-label">Chats</span>
+        <span class="nav-badge vermelho" id="nb-chats">0</span>
     </a>
     <hr class="sidebar-divider">
     <div class="sidebar-section-label">Usuários</div>
@@ -499,6 +557,28 @@
         <div id="gridPerfilChamados" class="grid-chamados"></div>
         <div class="section-head" style="margin-top:24px;">
             <button class="adm-btn adm-btn-danger" id="btnExcluirUsuario"><i class="bi bi-trash3"></i> Excluir usuário</button>
+        </div>
+    </div>
+
+    <!-- ===== CHATS VIEW ===== -->
+    <div id="viewChats" style="display:none;">
+        <div class="section-head">
+            <div class="section-title"><i class="bi bi-chat-dots-fill"></i> Chats</div>
+            <span style="font-size:.72rem;color:var(--text-soft);">Conversas por usuário · todos os chamados do perfil em um só lugar</span>
+        </div>
+        <div class="chat-layout">
+            <aside class="chat-list" id="chatList"></aside>
+            <section class="chat-main">
+                <div class="chat-empty" id="chatEmpty">
+                    <i class="bi bi-chat-square-text"></i>
+                    <p>Selecione uma conversa à esquerda para ver o histórico e responder.</p>
+                </div>
+                <div class="chat-conversa" id="chatConversa" style="display:none;">
+                    <header class="chat-header" id="chatHeader"></header>
+                    <div class="chat-thread" id="chatThread"></div>
+                    <div class="chat-composer" id="chatComposer"></div>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -685,8 +765,8 @@ window.trocarVisao=(filtro,el)=>{
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     if(el) el.classList.add('active');
     else { const nav=document.querySelector(`[data-filtro="${filtro}"]`); if(nav) nav.classList.add('active'); }
-    const vD=document.getElementById('viewDashboard'),vC=document.getElementById('viewChamados'),vU=document.getElementById('viewCadastros'),vP=document.getElementById('viewPerfil');
-    vD.style.display='none';vC.style.display='none';vU.style.display='none';vP.style.display='none';
+    const vD=document.getElementById('viewDashboard'),vC=document.getElementById('viewChamados'),vU=document.getElementById('viewCadastros'),vP=document.getElementById('viewPerfil'),vCh=document.getElementById('viewChats');
+    vD.style.display='none';vC.style.display='none';vU.style.display='none';vP.style.display='none';vCh.style.display='none';
     if(filtro==='Dashboard'){
         vD.style.display='';
         renderNovos();
@@ -694,6 +774,9 @@ window.trocarVisao=(filtro,el)=>{
         vU.style.display='';
         renderCadastros();
         renderSolicitacoes();
+    }else if(filtro==='Chats'){
+        vCh.style.display='';
+        renderChats();
     }else{
         vC.style.display='';
         const icons={Pendentes:'bi-hourglass-split','Minha Fila':'bi-person-fill-check',Abertos:'bi-stars','Concluído':'bi-check-circle-fill'};
@@ -736,11 +819,9 @@ function buildCardHtml(c,id){
         <div class="card-details">
             <div class="desc-box">${c.descricao}</div>
             ${renderAnexosEnviados(c.anexos)}
-            <div class="chat-box">${msgs.map(m=>`<div class="${m.autor===tNome?'msg-tec':'msg-user'}"><b>${m.autor}:</b> ${m.texto}<br><small class="msg-data">${m.data||''}</small>${renderAnexosEnviados(m.anexos)}</div>`).join('')}</div>
             ${rastroCard}
             <div class="card-actions">
-                ${!resp?`<button class="act act-primary" onclick="event.stopPropagation();window.capturar('${id}')">Capturar chamado</button>`
-                    :(resp===tNome&&!concluido?`<div class="act-row"><button onclick="event.stopPropagation();window.abrirModalResponder('${id}',${JSON.stringify(msgs).replace(/"/g,'&quot;')})" class="act act-msg">Mensagem</button><button class="act act-fim" onclick="event.stopPropagation();window.abrirModalFinalizar('${id}')">Finalizar</button></div><button class="act act-transf" onclick="event.stopPropagation();window.abrirModalTransferir('${id}')">Transferir</button>`:'')}
+                <button class="act act-primary" onclick="event.stopPropagation();window.abrirChat('${c.ownerUid}')"><i class="bi bi-chat-dots-fill"></i> Abrir chat</button>
             </div>
         </div>
     </div>`;
@@ -787,10 +868,12 @@ onSnapshot(query(collection(db,"chamados"),orderBy("dataCriacao","desc")),snapsh
     document.getElementById('nb-pendentes').textContent=pendentes;
     document.getElementById('nb-minha').textContent=minha;
     document.getElementById('nb-concluidos').textContent=concluidos;
+    const _nbChats=document.getElementById('nb-chats');if(_nbChats)_nbChats.textContent=totalNaoLidasChats();
 
     atualizarDonut(abertos,pendentes,minha,concluidos,alta);
     if(visaoAtual==='Dashboard')renderNovos();
     else if(visaoAtual==='Perfil'){if(idEmFoco)window.abrirPerfilUsuario(idEmFoco);}
+    else if(visaoAtual==='Chats')renderChats();
     else renderChamados(visaoAtual);
 });
 }
@@ -879,6 +962,7 @@ function assinarCadastros(){
         usuariosTodos=snap.docs.map(d=>({id:d.id,u:d.data()}));
         atualizarBadgeSolicitacoes();
         if(visaoAtual==='Cadastros'){renderCadastros();renderSolicitacoes();}
+        else if(visaoAtual==='Chats')renderChats();
     },err=>console.error('[cadastros] FALHA ao ler (regras do Firestore?)',err));
 }
 
@@ -982,6 +1066,178 @@ window.voltarCadastros=()=>{
 };
 
 window.toggleCard=(card)=>card.classList.toggle('expandido');
+
+// ===== CHATS (visão agregada por perfil / ownerUid) — reaproveita as mensagens de cada chamado =====
+let chatFocoUid=null;
+let arquivosChat=[];
+
+function nomeDoOwner(uid,fallbackChamado){
+    const perfil=usuariosTodos.find(x=>x.id===uid);
+    if(perfil)return `${perfil.u.nome||''} ${perfil.u.sobrenome||''}`.trim()||'Usuário';
+    if(fallbackChamado)return `${fallbackChamado.nome||''} ${fallbackChamado.sobrenome||''}`.trim()||'Usuário';
+    return 'Usuário';
+}
+function iniciaisChat(nome){const p=(nome||'').trim().split(/\s+/);return((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||'?';}
+function millisCriacao(c){return c.dataCriacao?.toMillis?.()||0;}
+// chamados de um perfil em ordem cronológica (mais antigo -> mais novo)
+function chamadosDoOwner(uid){return todosOsChamados.filter(({c})=>c.ownerUid===uid).slice().sort((a,b)=>millisCriacao(a.c)-millisCriacao(b.c));}
+// "mensagem do usuário" = autor bate com o nome do solicitante do chamado (mensagens de técnicos têm o nome do técnico).
+function ehDoUsuario(m,c){return (m.autor||'').trim().toLowerCase()===(c.nome||'').trim().toLowerCase();}
+function naoLidasChamado(c){return (c.mensagens||[]).filter(m=>ehDoUsuario(m,c)&&!m.lido).length;}
+function listaConversas(){
+    const mapa=new Map();
+    todosOsChamados.forEach(({c,id})=>{if(!c.ownerUid)return;if(!mapa.has(c.ownerUid))mapa.set(c.ownerUid,[]);mapa.get(c.ownerUid).push({c,id});});
+    const convs=[];
+    mapa.forEach((chs,uid)=>{
+        const ord=chs.slice().sort((a,b)=>millisCriacao(a.c)-millisCriacao(b.c));
+        const ult=ord[ord.length-1];
+        let ultimaMsg=null;ord.forEach(({c})=>{const ms=c.mensagens||[];if(ms.length)ultimaMsg=ms[ms.length-1];});
+        const naoLidas=ord.reduce((n,{c})=>n+naoLidasChamado(c),0);
+        const ativo=ord.some(({c})=>c.status!=="Concluído");
+        convs.push({uid,nome:nomeDoOwner(uid,ult.c),ultimaMsg,naoLidas,ativo,ordem:millisCriacao(ult.c)});
+    });
+    return convs.sort((a,b)=>b.ordem-a.ordem);
+}
+function totalNaoLidasChats(){return listaConversas().reduce((n,cv)=>n+cv.naoLidas,0);}
+
+function renderListaConversas(){
+    const cont=document.getElementById('chatList');if(!cont)return;
+    const convs=listaConversas();
+    cont.innerHTML=convs.length?convs.map(cv=>{
+        const prev=cv.ultimaMsg?`${cv.ultimaMsg.autor==='Sistema'?'':esc(cv.ultimaMsg.autor)+': '}${esc((cv.ultimaMsg.texto||'').slice(0,40))}`:'Sem mensagens';
+        return `<div class="chat-item ${cv.uid===chatFocoUid?'ativo':''}" onclick="window.abrirChat('${cv.uid}')">
+            <div class="chat-avatar">${iniciaisChat(cv.nome)}</div>
+            <div class="chat-item-body">
+                <div class="chat-item-top"><span class="chat-item-nome">${esc(cv.nome)}</span><span class="chat-dot ${cv.ativo?'on':'off'}" title="${cv.ativo?'Chamado ativo':'Sem chamado ativo'}"></span></div>
+                <div class="chat-item-top"><span class="chat-item-prev">${prev}</span>${cv.naoLidas>0?`<span class="chat-unread">${cv.naoLidas}</span>`:''}</div>
+            </div>
+        </div>`;
+    }).join(''):`<div class="empty-state"><i class="bi bi-chat"></i><p>Nenhuma conversa ainda.</p></div>`;
+}
+
+function bolhaMsgChat(m,nomeUsuario){
+    if(m.autor==='Sistema')return `<div class="msg-sistema">${esc(m.texto)}${m.data?` · <small>${esc(m.data)}</small>`:''}</div>`;
+    const doUsuario=(m.autor||'').trim().toLowerCase()===(nomeUsuario||'').trim().toLowerCase();
+    // Mostra sempre o autor (qual técnico respondeu / o usuário).
+    return `<div class="chat-msg-wrap ${doUsuario?'theirs':'mine'}">
+        <span class="chat-msg-autor">${esc(m.autor)}</span>
+        <div class="${doUsuario?'msg-user':'msg-tec'}">${esc(m.texto)}${renderAnexosEnviados(m.anexos)}<br><small class="msg-data">${esc(m.data||'')}</small></div>
+    </div>`;
+}
+
+function renderConversa(uid){
+    const chs=chamadosDoOwner(uid);
+    const empty=document.getElementById('chatEmpty'),conv=document.getElementById('chatConversa');
+    if(!chs.length){empty.style.display='';conv.style.display='none';return;}
+    empty.style.display='none';conv.style.display='';
+    const nome=nomeDoOwner(uid,chs[chs.length-1].c);
+    const atual=chs[chs.length-1];               // chamado mais recente = "referente" no topo
+    const ativo=atual.c.status!=="Concluído";
+    let acoes='';
+    if(ativo){
+        if(!atual.c.tecnicoResponsavel)acoes=`<button class="act act-primary" style="padding:6px 12px;width:auto;" onclick="window.capturar('${atual.id}')">Capturar</button>`;
+        else if(atual.c.tecnicoResponsavel===tNome)acoes=`<button class="act act-fim" style="padding:6px 12px;width:auto;" onclick="window.abrirModalFinalizar('${atual.id}')">Finalizar</button><button class="act act-transf" style="padding:6px 12px;width:auto;" onclick="window.abrirModalTransferir('${atual.id}')">Transferir</button>`;
+    }
+    document.getElementById('chatHeader').innerHTML=`
+        <div class="chat-avatar">${iniciaisChat(nome)}</div>
+        <div class="chat-header-info">
+            <div class="chat-header-nome">${esc(nome)}</div>
+            <div class="chat-header-sub">
+                <span class="chat-chamado-badge"><i class="bi bi-ticket-detailed"></i> ${esc(atual.c.titulo||'Chamado')}</span>
+                <span class="chat-status ${ativo?'ativo':'fim'}">${ativo?'Ativo':'Finalizado'}</span>
+                ${atual.c.tecnicoResponsavel?`<span class="chat-chamado-badge"><i class="bi bi-person-fill"></i> ${esc(atual.c.tecnicoResponsavel)}</span>`:''}
+            </div>
+        </div>
+        <div class="chat-header-acoes">${acoes}</div>`;
+    let html='';
+    chs.forEach(({c})=>{
+        const dt=c.dataCriacao?.toDate?.();
+        const st=c.status==="Concluído"?'Finalizado':(c.tecnicoResponsavel?'Em atendimento':'Aguardando técnico');
+        html+=`<div class="chat-sep"><b>${esc(c.titulo||'Chamado')}</b> · ${esc(c.urgencia||'—')} · aberto em ${dt?esc(dt.toLocaleDateString('pt-BR')):'—'} · <span class="chat-sep-status">${st}</span></div>`;
+        const ms=c.mensagens||[];
+        if(ms.length)ms.forEach(m=>{html+=bolhaMsgChat(m,c.nome);});
+        else html+=`<div class="msg-sistema">Nenhuma mensagem neste chamado ainda.</div>`;
+    });
+    const thread=document.getElementById('chatThread');
+    thread.innerHTML=html;thread.scrollTop=thread.scrollHeight;
+    renderComposerChat(atual,ativo);
+}
+
+function renderComposerChat(atual,ativo){
+    const cont=document.getElementById('chatComposer');if(!cont)return;
+    const textoPreservar=document.getElementById('chatTexto')?.value||'';
+    const tinhaFoco=document.activeElement===document.getElementById('chatTexto');
+    const podeEnviar=ativo;   // qualquer técnico pode responder enquanto o chamado estiver ativo
+    if(podeEnviar){
+        cont.innerHTML=`
+            <div id="chatAnexoErro" class="anexo-erro" style="display:none;"></div>
+            <div id="chatPreview" class="anexo-preview"></div>
+            <div class="chat-input-row">
+                <button type="button" class="chat-icon-btn" id="chatBtnAnexo" title="Anexar arquivo"><i class="bi bi-paperclip"></i></button>
+                <input type="file" id="chatInputArquivo" multiple style="display:none;">
+                <textarea id="chatTexto" class="chat-textarea" rows="1" placeholder="Escreva uma mensagem..."></textarea>
+                <button type="button" class="chat-send-btn" id="chatBtnEnviar" title="Enviar"><i class="bi bi-send-fill"></i></button>
+            </div>`;
+        redesenharPreviewChat();
+        document.getElementById('chatBtnAnexo').onclick=()=>document.getElementById('chatInputArquivo').click();
+        document.getElementById('chatInputArquivo').onchange=(e)=>{selecionarArquivosChat(e.target.files);e.target.value='';};
+        document.getElementById('chatBtnEnviar').onclick=()=>enviarMensagemChat(atual.id);
+        const ta=document.getElementById('chatTexto');
+        ta.value=textoPreservar;
+        ta.addEventListener('keydown',(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();enviarMensagemChat(atual.id);}});
+        if(tinhaFoco){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}
+    }else{
+        cont.innerHTML=`<div class="chat-composer-lock"><i class="bi bi-lock-fill"></i> Chamado finalizado — histórico somente leitura. O usuário precisa abrir um novo chamado para conversar.</div>`;
+    }
+}
+function redesenharPreviewChat(){const p=document.getElementById('chatPreview');if(p)p.innerHTML=renderPreview(arquivosChat,'removerAnexoChat');}
+window.removerAnexoChat=(i)=>{arquivosChat.splice(i,1);redesenharPreviewChat();};
+function selecionarArquivosChat(fileList){
+    const{arquivos,erros}=adicionarArquivos(fileList,arquivosChat);
+    arquivosChat=arquivos;redesenharPreviewChat();
+    const err=document.getElementById('chatAnexoErro');
+    if(err){err.style.display=erros.length?'block':'none';err.textContent=erros.join(' ');}
+}
+async function enviarMensagemChat(chamadoId){
+    const ta=document.getElementById('chatTexto');const txt=(ta?.value||'').trim();
+    if(!txt&&!arquivosChat.length)return;
+    const btn=document.getElementById('chatBtnEnviar');if(btn)btn.disabled=true;
+    try{
+        const anexos=arquivosChat.length?await subirAnexos(await auth.currentUser.getIdToken(),chamadoId,'mensagens',arquivosChat):[];
+        const ref=doc(db,"chamados",chamadoId);const sn=await getDoc(ref);
+        const agora=new Date().toLocaleString('pt-BR');
+        const novas=(sn.data().mensagens||[]).map(m=>({...m,lido:true}));
+        const nova={autor:tNome,texto:txt||'(anexo enviado)',data:agora,lido:false};
+        if(anexos.length)nova.anexos=anexos;
+        novas.push(nova);
+        await updateDoc(ref,{mensagens:novas});
+        arquivosChat=[];if(ta)ta.value='';redesenharPreviewChat();
+    }catch(e){console.error('[chat] falha ao enviar',e);alert('Não foi possível enviar a mensagem.');}
+    finally{if(btn)btn.disabled=false;}
+}
+async function marcarLidasDoOwner(uid){
+    for(const {c,id} of chamadosDoOwner(uid)){
+        if(!(c.mensagens||[]).some(m=>ehDoUsuario(m,c)&&!m.lido))continue;
+        const novas=(c.mensagens||[]).map(m=>(ehDoUsuario(m,c)&&!m.lido)?{...m,lido:true}:m);
+        try{await updateDoc(doc(db,"chamados",id),{mensagens:novas});}catch(e){console.error('[chat] falha ao marcar lidas',e);}
+    }
+}
+function renderChats(){
+    renderListaConversas();
+    if(chatFocoUid&&todosOsChamados.some(({c})=>c.ownerUid===chatFocoUid))renderConversa(chatFocoUid);
+    else{chatFocoUid=null;const e=document.getElementById('chatEmpty'),cv=document.getElementById('chatConversa');if(e)e.style.display='';if(cv)cv.style.display='none';}
+}
+window.abrirChat=(uid)=>{
+    if(!uid)return;
+    chatFocoUid=uid;arquivosChat=[];
+    visaoAtual='Chats';
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    const nav=document.querySelector('[data-filtro="Chats"]');if(nav)nav.classList.add('active');
+    ['viewDashboard','viewChamados','viewCadastros','viewPerfil'].forEach(v=>{const el=document.getElementById(v);if(el)el.style.display='none';});
+    document.getElementById('viewChats').style.display='';
+    renderListaConversas();renderConversa(uid);marcarLidasDoOwner(uid);
+};
+
 window.capturar=async(id)=>{
     if(confirm("Capturar chamado?")){
         const docRef=doc(db,"chamados",id);const snap=await getDoc(docRef);const dados=snap.data();

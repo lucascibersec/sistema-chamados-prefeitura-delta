@@ -362,9 +362,19 @@
         <div class="tabs">
             <button class="tab active" data-tab="andamento" onclick="trocarTab('andamento',this)">Em andamento</button>
             <button class="tab" data-tab="finalizados" onclick="trocarTab('finalizados',this)">Finalizados</button>
+            <button class="tab" data-tab="chat" onclick="trocarTab('chat',this)"><i class="bi bi-chat-dots-fill"></i> Chat</button>
         </div>
 
         <div id="listaChamados"></div>
+
+        <!-- Chat: thread única com todos os chamados do usuário -->
+        <div id="chatView" style="display:none;">
+            <div class="uchat">
+                <header class="uchat-header" id="uchatHeader"></header>
+                <div class="uchat-thread" id="uchatThread"></div>
+                <div class="uchat-composer" id="uchatComposer"></div>
+            </div>
+        </div>
 
         <footer class="app-footer">&copy; 2026 Prefeitura de Delta · Gestão em Tecnologia</footer>
     </div>
@@ -392,6 +402,43 @@
         <button id="btnCancelarResposta" class="btn-secondary-app flex1">Cancelar</button>
     </div>
 </div>
+
+<style>
+    /* ===== Chat do usuário (thread agregada dos próprios chamados) ===== */
+    .uchat{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;height:calc(100vh - 240px);min-height:420px;box-shadow:var(--shadow);}
+    .uchat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .uchat-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-soft,rgba(79,70,229,.1));color:var(--accent);display:grid;place-items:center;font-weight:800;flex-shrink:0;}
+    .uchat-h-info{flex:1;min-width:0;}
+    .uchat-h-nome{font-weight:800;font-size:.95rem;color:var(--text);}
+    .uchat-h-sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:3px;}
+    .uchat-badge{font-size:.68rem;font-weight:700;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--border);padding:2px 8px;border-radius:50px;}
+    .uchat-status{font-size:.66rem;font-weight:800;padding:2px 9px;border-radius:50px;}
+    .uchat-status.on{background:rgba(34,197,94,.14);color:#16a34a;}
+    .uchat-status.off{background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border);}
+    .uchat-thread{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:var(--surface-2);}
+    .uchat-sep{align-self:center;max-width:92%;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.7rem;color:var(--text-muted);margin:10px 0 2px;box-shadow:var(--shadow);}
+    .uchat-sep b{color:var(--text);}
+    .uchat-sys{align-self:center;font-size:.68rem;color:var(--text-soft);text-align:center;padding:2px 8px;}
+    .uchat-wrap{display:flex;flex-direction:column;max-width:80%;}
+    .uchat-wrap.me{align-self:flex-end;align-items:flex-end;}
+    .uchat-wrap.them{align-self:flex-start;align-items:flex-start;}
+    .uchat-autor{font-size:.64rem;font-weight:700;color:var(--text-soft);margin:0 4px 2px;}
+    .uchat-autor.tec{color:var(--accent);}
+    .uchat-bubble{padding:8px 11px;font-size:.8rem;line-height:1.45;border-radius:12px;}
+    .uchat-wrap.me .uchat-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:3px;}
+    .uchat-wrap.them .uchat-bubble{background:var(--surface);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px;}
+    .uchat-time{display:block;font-size:.62rem;opacity:.7;margin-top:3px;}
+    .uchat-composer{border-top:1px solid var(--border);padding:10px 12px;background:var(--surface);}
+    .uchat-lock{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--text-soft);font-size:.78rem;padding:8px;text-align:center;}
+    .uchat-row{display:flex;gap:8px;align-items:flex-end;}
+    .uchat-ta{flex:1;resize:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px 12px;font-family:inherit;font-size:.82rem;max-height:120px;}
+    .uchat-ta:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring);}
+    .uchat-icon{background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);width:42px;height:42px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:1rem;}
+    .uchat-icon:hover{border-color:var(--accent);color:var(--accent);}
+    .uchat-send{background:var(--accent);color:#fff;border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:1rem;}
+    .uchat-send:hover{background:var(--accent-hover);}
+    .uchat-send:disabled{opacity:.6;cursor:not-allowed;}
+</style>
 
 <!-- Alternância de tema (claro/escuro) -->
 <script>
@@ -486,24 +533,15 @@
         });
     }
 
+    // "mensagem de técnico" = autor diferente do nome do solicitante e diferente de "Sistema".
+    function ehTecnico(m, c) {
+        return (m.autor || '').trim().toLowerCase() !== (c.nome || '').trim().toLowerCase() && m.autor !== 'Sistema';
+    }
+
     function cardHtml(id, c) {
         const msgs = c.mensagens || [];
         const concluido = c.status === 'Concluído';
-        const temNotif = msgs.some(m => m.autor.toLowerCase() !== perfil.nome.toLowerCase() && m.lido === false);
-        const chatHtml = msgs.length
-            ? msgs.map(m => {
-                const ehMeu = m.autor.toLowerCase() === perfil.nome.toLowerCase();
-                return `<div class="msg-line">
-                    <div class="msg-head">
-                        <span class="msg-author ${ehMeu ? 'me' : 'them'}">${esc(m.autor)}</span>
-                        <span class="msg-time">${esc(m.data || '')}</span>
-                    </div>
-                    <div class="msg-text">${esc(m.texto)}</div>
-                    ${renderAnexosEnviados(m.anexos)}
-                </div>`;
-            }).join('')
-            : '<div class="chat-empty">Aguardando atendimento...</div>';
-
+        const temNotif = msgs.some(m => ehTecnico(m, c) && m.lido === false);
         return `<div class="card-chamado ${temNotif ? 'card-notif' : ''}">
             <div class="card-top">
                 <div><h2 class="card-title">${esc(c.titulo)}</h2><div class="card-dep">${esc(c.departamento)}</div></div>
@@ -512,17 +550,25 @@
             <div class="desc-pessoal"><strong><i class="bi bi-info-circle me-1"></i>Sua solicitação:</strong><br>${esc(c.descricao || 'Sem descrição.')}</div>
             ${renderAnexosEnviados(c.anexos)}
             ${concluido && c.solucao ? `<div class="sol-box"><strong><i class="bi bi-check-circle me-1"></i>Solução aplicada:</strong><br>${esc(c.solucao)}</div>` : ''}
-            <div class="chat-box">${chatHtml}</div>
-            ${!concluido ? `<button onclick="responder('${id}', ${JSON.stringify(msgs).replace(/"/g, '&quot;')})" class="btn-responder">
-                <i class="bi bi-chat-dots"></i> Responder ${temNotif ? '<span class="notif-dot"></span>' : ''}
-            </button>` : ''}
+            <button onclick="window.abrirChatUsuario()" class="btn-responder">
+                <i class="bi bi-chat-dots"></i> Abrir chat ${temNotif ? '<span class="notif-dot"></span>' : ''}
+            </button>
         </div>`;
     }
 
     function render() {
+        const cont = document.getElementById('listaChamados');
+        const chatView = document.getElementById('chatView');
+        if (tabAtual === 'chat') {
+            cont.style.display = 'none';
+            chatView.style.display = 'block';
+            renderChatUsuario();
+            return;
+        }
+        cont.style.display = '';
+        chatView.style.display = 'none';
         const lista = meusChamados.filter(({ c }) =>
             tabAtual === 'andamento' ? c.status !== 'Concluído' : c.status === 'Concluído');
-        const cont = document.getElementById('listaChamados');
         if (!lista.length) {
             const msg = tabAtual === 'andamento'
                 ? 'Você não tem chamados em andamento. Clique em "Abrir novo chamado".'
@@ -538,10 +584,126 @@
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
         render();
+        if (tab === 'chat') marcarLidasUsuario();
     };
 
     window.toggleForm = () => {
         document.getElementById('formPanel').classList.toggle('open');
+    };
+
+    // ===== Chat do usuário: thread única com todos os seus chamados =====
+    let arquivosUChat = [];
+
+    function chamadosCronologico() {
+        // meusChamados vem em ordem desc; aqui devolve asc (mais antigo -> mais novo)
+        return meusChamados.slice().sort((a, b) => (a.c.dataCriacao?.toMillis?.() || 0) - (b.c.dataCriacao?.toMillis?.() || 0));
+    }
+
+    function renderChatUsuario() {
+        const chs = chamadosCronologico();
+        const header = document.getElementById('uchatHeader');
+        const thread = document.getElementById('uchatThread');
+        const composer = document.getElementById('uchatComposer');
+        if (!chs.length) {
+            header.innerHTML = `<div class="uchat-avatar"><i class="bi bi-headset"></i></div><div class="uchat-h-info"><div class="uchat-h-nome">Suporte Técnico</div></div>`;
+            thread.innerHTML = `<div class="uchat-sys">Você ainda não abriu nenhum chamado. Clique em "Abrir novo chamado" para começar a conversar com o suporte.</div>`;
+            composer.innerHTML = `<div class="uchat-lock"><i class="bi bi-lock-fill"></i> Abra um chamado para conversar com o suporte.</div>`;
+            return;
+        }
+        const atual = meusChamados[0];            // mais recente (meusChamados está desc) = "referente" no topo
+        const ativo = atual.c.status !== 'Concluído';
+        header.innerHTML = `
+            <div class="uchat-avatar"><i class="bi bi-headset"></i></div>
+            <div class="uchat-h-info">
+                <div class="uchat-h-nome">Suporte Técnico · Prefeitura de Delta</div>
+                <div class="uchat-h-sub">
+                    <span class="uchat-badge"><i class="bi bi-ticket-detailed"></i> ${esc(atual.c.titulo || 'Chamado')}</span>
+                    <span class="uchat-status ${ativo ? 'on' : 'off'}">${ativo ? 'Ativo' : 'Finalizado'}</span>
+                    ${atual.c.tecnicoResponsavel ? `<span class="uchat-badge"><i class="bi bi-person-fill"></i> ${esc(atual.c.tecnicoResponsavel)}</span>` : ''}
+                </div>
+            </div>`;
+        let html = '';
+        chs.forEach(({ c }) => {
+            const dt = c.dataCriacao?.toDate?.();
+            const st = c.status === 'Concluído' ? 'Finalizado' : (c.tecnicoResponsavel ? 'Em atendimento' : 'Aguardando técnico');
+            html += `<div class="uchat-sep"><b>${esc(c.titulo || 'Chamado')}</b> · aberto em ${dt ? esc(dt.toLocaleDateString('pt-BR')) : '—'} · ${st}</div>`;
+            const ms = c.mensagens || [];
+            if (!ms.length) html += `<div class="uchat-sys">Aguardando atendimento...</div>`;
+            ms.forEach(m => {
+                if (m.autor === 'Sistema') { html += `<div class="uchat-sys">${esc(m.texto)}</div>`; return; }
+                const tec = ehTecnico(m, c);
+                html += `<div class="uchat-wrap ${tec ? 'them' : 'me'}">
+                    <span class="uchat-autor ${tec ? 'tec' : ''}">${tec ? '<i class="bi bi-headset"></i> ' : ''}${esc(m.autor)}</span>
+                    <div class="uchat-bubble">${esc(m.texto)}${renderAnexosEnviados(m.anexos)}<span class="uchat-time">${esc(m.data || '')}</span></div>
+                </div>`;
+            });
+        });
+        thread.innerHTML = html;
+        thread.scrollTop = thread.scrollHeight;
+        renderComposerUsuario(atual, ativo);
+    }
+
+    function renderComposerUsuario(atual, ativo) {
+        const composer = document.getElementById('uchatComposer');
+        const textoPreservar = document.getElementById('uchatTexto')?.value || '';
+        const tinhaFoco = document.activeElement === document.getElementById('uchatTexto');
+        if (ativo) {
+            composer.innerHTML = `
+                <div id="uchatAnexoErro" class="anexo-erro" style="display:none;"></div>
+                <div id="uchatPreview" class="anexo-preview"></div>
+                <div class="uchat-row">
+                    <button type="button" class="uchat-icon" id="uchatBtnAnexo" title="Anexar arquivo"><i class="bi bi-paperclip"></i></button>
+                    <input type="file" id="uchatInput" multiple style="display:none;">
+                    <textarea id="uchatTexto" class="uchat-ta" rows="1" placeholder="Escreva uma mensagem..."></textarea>
+                    <button type="button" class="uchat-send" id="uchatBtnEnviar" title="Enviar"><i class="bi bi-send-fill"></i></button>
+                </div>`;
+            redesenharPreviewUChat();
+            document.getElementById('uchatBtnAnexo').onclick = () => document.getElementById('uchatInput').click();
+            document.getElementById('uchatInput').onchange = (e) => { selecionarArquivosUChat(e.target.files); e.target.value = ''; };
+            document.getElementById('uchatBtnEnviar').onclick = () => enviarMensagemUChat(atual.id);
+            const ta = document.getElementById('uchatTexto');
+            ta.value = textoPreservar;
+            ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagemUChat(atual.id); } });
+            if (tinhaFoco) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+        } else {
+            composer.innerHTML = `<div class="uchat-lock"><i class="bi bi-lock-fill"></i> Chamado finalizado — histórico salvo. Abra um novo chamado para voltar a falar com o suporte.</div>`;
+        }
+    }
+    function redesenharPreviewUChat() { const p = document.getElementById('uchatPreview'); if (p) p.innerHTML = renderPreview(arquivosUChat, 'removerAnexoUChat'); }
+    window.removerAnexoUChat = (i) => { arquivosUChat.splice(i, 1); redesenharPreviewUChat(); };
+    function selecionarArquivosUChat(fileList) {
+        const { arquivos, erros } = adicionarArquivos(fileList, arquivosUChat);
+        arquivosUChat = arquivos; redesenharPreviewUChat();
+        const err = document.getElementById('uchatAnexoErro');
+        if (err) { err.style.display = erros.length ? 'block' : 'none'; err.textContent = erros.join(' '); }
+    }
+    async function enviarMensagemUChat(chamadoId) {
+        const ta = document.getElementById('uchatTexto'); const txt = (ta?.value || '').trim();
+        if (!txt && !arquivosUChat.length) return;
+        const btn = document.getElementById('uchatBtnEnviar'); if (btn) btn.disabled = true;
+        try {
+            const anexos = arquivosUChat.length ? await subirAnexos(await auth.currentUser.getIdToken(), chamadoId, 'mensagens', arquivosUChat) : [];
+            const ref = doc(db, 'chamados', chamadoId); const sn = await getDoc(ref);
+            const agora = new Date().toLocaleString('pt-BR');
+            const novas = (sn.data().mensagens || []).map(m => ({ ...m, lido: true }));
+            const nova = { autor: perfil.nome, texto: txt || '(anexo enviado)', data: agora, lido: false };
+            if (anexos.length) nova.anexos = anexos;
+            novas.push(nova);
+            await updateDoc(ref, { mensagens: novas });
+            arquivosUChat = []; if (ta) ta.value = ''; redesenharPreviewUChat();
+        } catch (e) { console.error('[painel] falha ao enviar no chat', e); alert('Não foi possível enviar a mensagem.'); }
+        finally { if (btn) btn.disabled = false; }
+    }
+    async function marcarLidasUsuario() {
+        for (const { id, c } of meusChamados) {
+            if (!(c.mensagens || []).some(m => ehTecnico(m, c) && !m.lido)) continue;
+            const novas = (c.mensagens || []).map(m => (ehTecnico(m, c) && !m.lido) ? { ...m, lido: true } : m);
+            try { await updateDoc(doc(db, 'chamados', id), { mensagens: novas }); } catch (e) { console.error('[painel] falha ao marcar lidas', e); }
+        }
+    }
+    window.abrirChatUsuario = () => {
+        const btn = document.querySelector('.tab[data-tab="chat"]');
+        if (btn) window.trocarTab('chat', btn);
     };
 
     // ===== Anexos do formulário de abertura =====
