@@ -10,189 +10,149 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 
-    <script>
-        (function () {
-            var t = localStorage.getItem('theme');
-            if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', t);
-        })();
-    </script>
-
     <style>
         :root {
+            /* Cores originais do sistema (accent indigo) */
             --accent: #4f46e5; --accent-hover: #4338ca;
-            --accent-soft: rgba(79,70,229,.10); --accent-ring: rgba(79,70,229,.20);
-            --bg-1: #fbfbfd; --bg-2: #eef1f6; --surface: #ffffff; --surface-2: #f6f7f9;
-            --border: #e6e8ec; --border-strong: #d6d9df;
-            --text: #14171f; --text-muted: #6b7280; --text-soft: #9aa1ac;
-            --red: #dc2626; --red-soft: rgba(220,38,38,.10);
-            --amber: #d97706; --amber-soft: rgba(217,119,6,.12);
-            --shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 40px rgba(16,24,40,.08);
-            --radius: 16px; --radius-sm: 10px;
-            --brand-panel-w: 46%;
-        }
-        html[data-theme="dark"] {
-            --accent: #6366f1; --accent-hover: #818cf8;
-            --accent-soft: rgba(99,102,241,.16); --accent-ring: rgba(99,102,241,.30);
-            --bg-1: #0a0c10; --bg-2: #11141b; --surface: #15181f; --surface-2: #1b1f27;
-            --border: #262b34; --border-strong: #333945;
-            --text: #f1f3f6; --text-muted: #99a1ad; --text-soft: #6b7280;
+            --accent-ring: rgba(79,70,229,.35); --accent-soft: #a5b4fc;
             --red: #f87171; --red-soft: rgba(248,113,113,.14);
             --amber: #fbbf24; --amber-soft: rgba(251,191,36,.14);
-            --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 50px rgba(0,0,0,.55);
+            --radius: 16px; --radius-sm: 10px;
+
+            /* Paleta de vidro da faixa de login (sempre escura, sobre a foto) */
+            --glass: rgba(14,17,24,.86);
+            --glass-border: rgba(255,255,255,.09);
+            --on-glass: #f2f4f8;
+            --on-glass-muted: rgba(233,237,244,.68);
+            --on-glass-soft: rgba(233,237,244,.40);
+            --field-bg: rgba(255,255,255,.045);
+            --field-border: rgba(255,255,255,.14);
         }
         * { box-sizing: border-box; }
         html, body { height: 100%; }
         body {
-            background: var(--bg-1); font-family: 'Inter', sans-serif; color: var(--text);
-            margin: 0; transition: background-color .3s ease, color .3s ease;
+            margin: 0; font-family: 'Inter', sans-serif; color: var(--on-glass);
+            background-color: #0b0d11;
+        }
+        /* Camada de fundo dedicada: recebe a foto + desfoque leve, sem borrar a faixa de login.
+           O scale(1.06) evita que o blur revele bordas claras nas extremidades.
+           #0b0d11 é o fallback caso a imagem não carregue. */
+        .auth-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background-color: #0b0d11;
+            background-image:
+                radial-gradient(130% 120% at 32% 42%, transparent 52%, rgba(6,8,12,.42) 100%),
+                linear-gradient(90deg, rgba(8,10,14,.42) 0%, rgba(8,10,14,.10) 42%, rgba(8,10,14,.32) 100%),
+                url('img/imgpontedelta.jpeg');
+            background-size: cover; background-position: center;
+            filter: blur(4px); transform: scale(1.06);
         }
 
-        /* ===== Layout em duas colunas (split-screen) ===== */
-        .auth-shell { display: flex; min-height: 100vh; }
+        /* ===== Card de login central, sobre a foto desfocada ===== */
+        .auth-shell { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 32px 20px; }
+        .auth-card {
+            position: relative; width: 100%; max-width: 460px; text-align: center;
+            /* vidro escuro translúcido + brilho indigo sutil no topo = identidade da marca */
+            background:
+                radial-gradient(560px 260px at 50% -12%, rgba(99,102,241,.20), transparent 62%),
+                linear-gradient(180deg, rgba(17,20,29,.84) 0%, rgba(11,13,20,.88) 100%);
+            -webkit-backdrop-filter: blur(20px) saturate(115%); backdrop-filter: blur(20px) saturate(115%);
+            border: 1px solid var(--glass-border);
+            border-radius: 22px;
+            box-shadow: 0 30px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+            padding: 44px 44px 34px;
+        }
 
-        /* ----- Painel de marca (esquerda) ----- */
-        .brand-panel {
-            position: relative; flex: 0 0 var(--brand-panel-w); max-width: 620px; overflow: hidden;
-            display: flex; flex-direction: column; color: #fff;
-            background: radial-gradient(1100px 700px at 15% -10%, rgba(255,255,255,.16), transparent 55%),
-                        linear-gradient(160deg, var(--accent) 0%, #1e1b4b 130%);
-        }
-        .brand-panel-bg {
-            position: absolute; inset: 0; background-image: url('img/hex-white-bg.jpg');
-            background-size: cover; background-position: center; opacity: .16; mix-blend-mode: overlay;
-        }
-        .brand-panel-content {
-            position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between;
-            height: 100%; padding: 52px 48px;
-        }
-        .brand-panel-top { display: flex; align-items: center; gap: 12px; }
-        .brand-panel-top img { width: 38px; height: 38px; flex-shrink: 0; }
-        .brand-panel-top span { font-weight: 800; font-size: 1.05rem; letter-spacing: -.01em; }
-        .brand-panel-mid h1 { font-size: 2.15rem; font-weight: 800; line-height: 1.16; letter-spacing: -.03em; margin: 0 0 14px; }
-        .brand-panel-mid p { font-size: .95rem; line-height: 1.65; color: rgba(255,255,255,.82); max-width: 380px; margin: 0 0 34px; }
-        .brand-features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 15px; }
-        .brand-features li { display: flex; align-items: center; gap: 12px; font-size: .85rem; font-weight: 600; color: rgba(255,255,255,.94); }
-        .brand-features i {
-            width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.14);
-            display: grid; place-items: center; font-size: .95rem; flex-shrink: 0;
-        }
-        .brand-panel-bottom { font-size: .72rem; color: rgba(255,255,255,.55); }
+        .brand-logo { margin-bottom: 20px; }
+        .brand-logo img { width: 62px; height: 62px; filter: drop-shadow(0 8px 18px rgba(79,70,229,.45)); }
 
-        @media (max-width: 900px) { .brand-panel { display: none; } }
+        .login-title { font-weight: 800; font-size: 1.9rem; color: #fff; margin: 0 0 6px; letter-spacing: -.02em; }
+        .login-subtitle { font-size: .88rem; color: var(--on-glass-muted); font-weight: 500; margin: 0 0 26px; line-height: 1.5; }
 
-        /* ----- Painel do formulário (direita) ----- */
-        .form-side { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; position: relative; }
-
-        .theme-fab {
-            position: fixed; top: 18px; right: 18px; width: 40px; height: 40px; border-radius: 10px;
-            border: 1px solid var(--border); background: var(--surface); color: var(--text-muted);
-            display: grid; place-items: center; cursor: pointer; font-size: 1.05rem; transition: .2s ease; box-shadow: var(--shadow);
-            z-index: 20;
-        }
-        .theme-fab:hover { color: var(--text); border-color: var(--border-strong); }
-        .login-box {
-            background: var(--surface); border: 1px solid var(--border); padding: 40px 36px;
-            border-radius: var(--radius); width: 100%; max-width: 400px; text-align: left; box-shadow: var(--shadow);
-        }
-        .login-eyebrow {
-            font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
-            color: var(--accent); margin-bottom: 8px;
-        }
-        .login-title { font-weight: 800; font-size: 1.4rem; color: var(--text); margin-bottom: 4px; letter-spacing: -0.02em; }
-        .login-subtitle { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-bottom: 26px; }
-        .field { margin-bottom: 18px; text-align: left; }
-        .field-label { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; display: block; text-align: left; margin-bottom: 6px; }
+        .field { margin-bottom: 16px; text-align: left; }
+        .field-label { color: var(--on-glass-muted); font-weight: 600; font-size: .78rem; display: block; margin-bottom: 6px; }
         .input {
-            width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
-            padding: 11px 13px; font-size: 0.9rem; border-radius: var(--radius-sm); font-family: inherit;
-            transition: border-color .15s ease, box-shadow .15s ease;
+            width: 100%; background: var(--field-bg); border: 1px solid var(--field-border); color: #fff;
+            padding: 12px 13px; font-size: .9rem; border-radius: var(--radius-sm); font-family: inherit;
+            transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
         }
-        .input::placeholder { color: var(--text-soft); }
-        .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); background: var(--surface); }
+        .input::placeholder { color: var(--on-glass-soft); }
+        .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); background: rgba(255,255,255,.10); }
         .pass-wrap { position: relative; }
         .pass-wrap .input { padding-right: 44px; }
         .toggle-eye {
             position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px;
-            border-radius: 8px; border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+            border-radius: 8px; border: none; background: transparent; color: var(--on-glass-muted); cursor: pointer;
             display: grid; place-items: center; font-size: 1rem;
         }
-        .toggle-eye:hover { color: var(--accent); }
+        .toggle-eye:hover { color: #fff; }
         .btn-logar {
-            background: var(--accent); color: #fff; border: none; padding: 13px; width: 100%;
-            border-radius: var(--radius-sm); font-weight: 700; font-size: 0.92rem; margin-top: 6px; cursor: pointer;
-            transition: 0.2s ease; box-shadow: 0 8px 20px var(--accent-ring);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            background: linear-gradient(180deg, #6366f1 0%, var(--accent) 100%);
+            color: #fff; border: none; padding: 13px; width: 100%;
+            border-radius: var(--radius-sm); font-weight: 700; font-size: .92rem; margin-top: 8px; cursor: pointer;
+            letter-spacing: .01em; transition: .2s ease; box-shadow: 0 12px 28px rgba(79,70,229,.38);
         }
-        .btn-logar:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-logar:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 16px 34px rgba(79,70,229,.5); }
         .btn-logar:disabled { opacity: .65; cursor: not-allowed; }
-        #msgBox { padding: 10px; border-radius: var(--radius-sm); margin-top: 18px; font-size: 0.8rem; font-weight: 600; display: none; }
-        #msgBox.erro { background: var(--red-soft); color: var(--red); border: 1px solid var(--red); }
-        #msgBox.aviso { background: var(--amber-soft); color: var(--amber); border: 1px solid var(--amber); }
+        #msgBox { padding: 10px; border-radius: var(--radius-sm); margin-top: 16px; font-size: .8rem; font-weight: 600; display: none; }
+        #msgBox.erro { background: var(--red-soft); color: var(--red); border: 1px solid rgba(248,113,113,.5); }
+        #msgBox.aviso { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(251,191,36,.5); }
         .notice-card {
-            display: flex; align-items: flex-start; gap: 10px;
-            background: var(--amber-soft); border: 1px solid var(--amber); color: var(--text);
-            border-radius: var(--radius-sm); padding: 12px 13px; margin-bottom: 20px;
-            font-size: 0.8rem; line-height: 1.5; text-align: left;
+            display: flex; align-items: flex-start; gap: 11px;
+            background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+            border-left: 2px solid var(--amber); color: var(--on-glass-muted);
+            border-radius: 10px; padding: 12px 14px; margin-bottom: 22px;
+            font-size: .78rem; line-height: 1.55; text-align: left;
         }
-        .notice-card i { color: var(--amber); font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
-        .notice-card strong { color: var(--amber); font-weight: 700; }
-        .link-row { margin-top: 22px; font-size: 0.82rem; color: var(--text-muted); text-align: center; }
-        .link-row a { color: var(--accent); font-weight: 600; text-decoration: none; }
+        .notice-card i { color: var(--amber); font-size: .95rem; margin-top: 1px; flex-shrink: 0; }
+        .notice-card strong { color: #fff; font-weight: 700; }
+        .link-row { margin-top: 20px; font-size: .82rem; color: var(--on-glass-muted); text-align: center; }
+        .link-row a { color: var(--accent-soft); font-weight: 600; text-decoration: none; }
         .link-row a:hover { text-decoration: underline; }
-        .footer-text { margin-top: 22px; font-size: 0.74rem; color: var(--text-soft); text-align: center; }
+        .link-row--sep { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.07); }
+        .footer-text { margin-top: 22px; font-size: .72rem; color: var(--on-glass-soft); text-align: center; }
 
-        /* Estilos do Cookie Banner em conformidade com a LGPD e o tema do sistema */
+        /* No mobile o card usa quase toda a largura */
+        @media (max-width: 640px) {
+            .auth-card { padding: 34px 24px 28px; border-radius: 18px; }
+            .login-title { font-size: 1.7rem; }
+        }
+
+        /* Cookie Banner (LGPD) — no mesmo vidro escuro da faixa */
         .cookie-banner {
             position: fixed; bottom: 20px; left: 20px; right: 20px;
-            background: var(--surface); border: 1px solid var(--border-strong);
-            padding: 20px; border-radius: var(--radius); display: none; z-index: 99999;
-            box-shadow: var(--shadow); text-align: left; max-width: 500px; margin-left: auto;
-            transition: background-color .3s ease, border-color .3s ease;
+            background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border); color: var(--on-glass);
+            padding: 18px; border-radius: var(--radius); display: none; z-index: 99999;
+            box-shadow: 0 12px 40px rgba(0,0,0,.45); text-align: left; max-width: 460px; margin-left: auto;
         }
-        .cookie-text { margin: 0 0 16px 0; font-size: 0.84rem; line-height: 1.5; color: var(--text-muted); }
-        .cookie-text strong { color: var(--accent); }
+        .cookie-text { margin: 0 0 14px 0; font-size: .82rem; line-height: 1.5; color: var(--on-glass-muted); }
+        .cookie-text strong { color: var(--accent-soft); }
         .btn-cookie {
-            background: var(--accent); color: #fff; border: none; padding: 8px 16px;
-            border-radius: var(--radius-sm); font-weight: 600; font-size: 0.85rem; cursor: pointer;
-            transition: 0.2s ease;
+            background: var(--accent); color: #fff; border: none; padding: 9px 16px;
+            border-radius: var(--radius-sm); font-weight: 600; font-size: .85rem; cursor: pointer;
+            transition: .2s ease;
         }
         .btn-cookie:hover { background: var(--accent-hover); }
+        @media (max-width: 640px) {
+            .cookie-banner { left: 14px; right: 14px; bottom: 14px; max-width: none; }
+        }
     </style>
 </head>
 <body>
 
-    <button type="button" class="theme-fab" id="themeToggle" aria-label="Alternar tema" title="Alternar tema">
-        <i class="bi bi-moon-stars"></i>
-    </button>
+    <div class="auth-bg" aria-hidden="true"></div>
 
     <div class="auth-shell">
-        <!-- Painel de marca institucional -->
-        <aside class="brand-panel">
-            <div class="brand-panel-bg"></div>
-            <div class="brand-panel-content">
-                <div class="brand-panel-top">
-                    <img src="assets/logo-mark-white.svg" alt="Delta Cyber Chamados">
-                    <span>Delta Cyber Security</span>
+        <!-- Card de login central (vidro escuro sobre a foto desfocada) -->
+        <main class="auth-card">
+                <div class="brand-logo">
+                    <img src="assets/logo-icon.svg" alt="Delta Cyber Security">
                 </div>
-                <div class="brand-panel-mid">
-                    <h1>Central de Suporte Técnico da Prefeitura de Delta</h1>
-                    <p>Abra, acompanhe e resolva chamados de TI com segurança e rastreabilidade total, em um único lugar.</p>
-                    <ul class="brand-features">
-                        <li><i class="bi bi-shield-check"></i> Registros auditáveis e imutáveis</li>
-                        <li><i class="bi bi-lightning-charge-fill"></i> Atendimento e SLA em tempo real</li>
-                        <li><i class="bi bi-paperclip"></i> Anexe fotos e arquivos ao chamado</li>
-                    </ul>
-                </div>
-                <div class="brand-panel-bottom">&copy; 2026 Delta Cyber Security · Gestão em Tecnologia</div>
-            </div>
-        </aside>
 
-        <!-- Formulário de login -->
-        <main class="form-side">
-            <div class="login-box">
-                <div class="login-eyebrow">Portal do solicitante</div>
-                <div class="login-title">Bem-vindo de volta</div>
-                <p class="login-subtitle">Acesse sua conta para abrir e acompanhar chamados.</p>
+                <h1 class="login-title">Suporte Técnico</h1>
+                <p class="login-subtitle">Acesso ao Sistema • informe seu e-mail e senha</p>
 
                 <div class="notice-card">
                     <i class="bi bi-exclamation-triangle-fill"></i>
@@ -214,7 +174,7 @@
                     </div>
                 </div>
 
-                <button id="btnEntrar" class="btn-logar">Entrar</button>
+                <button id="btnEntrar" class="btn-logar"><i class="bi bi-box-arrow-in-right"></i> Entrar</button>
 
                 <div id="msgBox"></div>
 
@@ -231,12 +191,11 @@
                     <div class="link-row"><a href="#" id="linkCancelarReset">Cancelar</a></div>
                 </div>
 
-                <div class="link-row">
+                <div class="link-row link-row--sep">
                     Ainda não tem cadastro? <a href="cadastro.html">Criar cadastro</a>
                 </div>
 
-                <div class="footer-text">&copy; 2026 Delta Cyber Security · Gestão em Tecnologia</div>
-            </div>
+                <div class="footer-text">Delta Cyber Security</div>
         </main>
     </div>
 
@@ -246,18 +205,6 @@
         </p>
         <button id="btnAceitarCookies" class="btn-cookie">Aceitar e Continuar</button>
     </div>
-
-    <script>
-        (function () {
-            const btn = document.getElementById('themeToggle');
-            function syncIcon(t) { btn.querySelector('i').className = t === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars'; }
-            function apply(t) { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); syncIcon(t); }
-            syncIcon(document.documentElement.getAttribute('data-theme'));
-            btn.addEventListener('click', () => {
-                apply(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-            });
-        })();
-    </script>
 
     <script>
         (function () {
@@ -303,7 +250,7 @@
             msgBox.textContent = msg;
             msgBox.style.display = 'block';
         };
-        const resetBtn = () => { btn.disabled = false; btn.innerText = 'Entrar'; };
+        const resetBtn = () => { btn.disabled = false; btn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrar'; };
 
         // Mostrar/esconder senha
         document.getElementById('togglePassword').onclick = () => {
@@ -380,7 +327,7 @@
             if (!email || !senha) { aviso('Informe e-mail e senha.', 'erro'); return; }
 
             msgBox.style.display = 'none';
-            btn.disabled = true; btn.innerText = 'Entrando...';
+            btn.disabled = true; btn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrando...';
             mostrarMsgLogin = true;
             try {
                 await signInWithEmailAndPassword(auth, email, senha);
