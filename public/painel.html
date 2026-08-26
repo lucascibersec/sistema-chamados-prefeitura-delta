@@ -428,6 +428,16 @@
     .uchat-wrap.me .uchat-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:3px;}
     .uchat-wrap.them .uchat-bubble{background:var(--surface);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px;}
     .uchat-time{display:block;font-size:.62rem;opacity:.7;margin-top:3px;}
+    /* Recibo de leitura / status de envio (estilo WhatsApp) nas mensagens que o usuário enviou */
+    .uchat-status{display:inline-flex;align-items:center;gap:2px;margin-left:4px;}
+    .uchat-status .bi{font-size:.72rem;line-height:1;}
+    .uchat-status.enviada{color:rgba(255,255,255,.8);}   /* ✓ entregue, técnico ainda não viu */
+    .uchat-status.lida{color:#7dd3fc;}                    /* ✓✓ azul: técnico visualizou */
+    .uchat-status.enviando{color:rgba(255,255,255,.8);}
+    .uchat-status.falhou{color:#fecaca;font-weight:600;}
+    .uchat-status.falhou a{color:#fff;text-decoration:underline;cursor:pointer;}
+    .uchat-wrap.pend-enviando{opacity:.6;}
+    .uchat-wrap.pend-falhou .uchat-bubble{background:#b91c1c;}
     .uchat-composer{border-top:1px solid var(--border);padding:10px 12px;background:var(--surface);}
     .uchat-lock{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--text-soft);font-size:.78rem;padding:8px;text-align:center;}
     .uchat-row{display:flex;gap:8px;align-items:flex-end;}
@@ -593,6 +603,44 @@
 
     // ===== Chat do usuário: thread única com todos os seus chamados =====
     let arquivosUChat = [];
+    // Mensagens enviadas de forma otimista: aparecem na hora e guardam o estado
+    // "enviando" ou "falhou" até o Firestore confirmar / o usuário reenviar.
+    let pendentesUChat = [];
+
+    // Recibo de leitura das mensagens que o usuário enviou: ✓ entregue / ✓✓ azul quando o técnico visualizou.
+    function reciboMsgU(m) {
+        const lida = m.lido === true;
+        return `<span class="uchat-status ${lida ? 'lida' : 'enviada'}" title="${lida ? 'Visualizada' : 'Enviada'}"><i class="bi ${lida ? 'bi-check-all' : 'bi-check2'}"></i></span>`;
+    }
+    function bolhaPendenteUChat(p) {
+        const anexosHtml = p.arquivos.length ? `<div class="anexos-lista"><span class="anexo-item"><i class="bi bi-paperclip anexo-file-ico"></i><span class="anexo-item-nome">${p.arquivos.length} anexo(s)</span></span></div>` : '';
+        const status = p.status === 'falhou'
+            ? `<span class="uchat-status falhou" title="Não enviada"><i class="bi bi-exclamation-circle-fill"></i> Não enviada · <a onclick="window.reenviarPendenteUChat('${p.tempId}')">reenviar</a> · <a onclick="window.descartarPendenteUChat('${p.tempId}')">descartar</a></span>`
+            : `<span class="uchat-status enviando" title="Enviando..."><i class="bi bi-clock"></i></span>`;
+        return `<div class="uchat-wrap me pend-${p.status}">
+            <span class="uchat-autor">${esc(perfil.nome)}</span>
+            <div class="uchat-bubble">${esc(p.texto || '(anexo)')}${anexosHtml}<span class="uchat-time">${esc(p.data)}${status}</span></div>
+        </div>`;
+    }
+    async function tentarEnviarPendenteU(p) {
+        p.status = 'enviando'; renderChatUsuario();
+        try {
+            const anexos = p.arquivos.length ? await subirAnexos(await auth.currentUser.getIdToken(), p.chamadoId, 'mensagens', p.arquivos) : [];
+            const ref = doc(db, 'chamados', p.chamadoId); const sn = await getDoc(ref);
+            const dados = sn.data();
+            const agora = new Date().toLocaleString('pt-BR');
+            // Ao responder marco como lidas só as mensagens do técnico (eu as vi); preservo o recibo das minhas.
+            const novas = (dados.mensagens || []).map(m => ehTecnico(m, dados) ? { ...m, lido: true } : m);
+            const nova = { autor: perfil.nome, texto: p.texto || '(anexo enviado)', data: agora, lido: false };
+            if (anexos.length) nova.anexos = anexos;
+            novas.push(nova);
+            await updateDoc(ref, { mensagens: novas });
+            pendentesUChat = pendentesUChat.filter(x => x !== p);   // sucesso: o snapshot traz a mensagem real
+            renderChatUsuario();
+        } catch (e) { console.error('[painel] falha ao enviar no chat', e); p.status = 'falhou'; renderChatUsuario(); }
+    }
+    window.reenviarPendenteUChat = (tempId) => { const p = pendentesUChat.find(x => x.tempId === tempId); if (p) tentarEnviarPendenteU(p); };
+    window.descartarPendenteUChat = (tempId) => { pendentesUChat = pendentesUChat.filter(x => x.tempId !== tempId); renderChatUsuario(); };
 
     function chamadosCronologico() {
         // meusChamados vem em ordem desc; aqui devolve asc (mais antigo -> mais novo)
@@ -632,12 +680,16 @@
             ms.forEach(m => {
                 if (m.autor === 'Sistema') { html += `<div class="uchat-sys">${esc(m.texto)}</div>`; return; }
                 const tec = ehTecnico(m, c);
+                // Recibo só nas mensagens do próprio usuário (me): ✓ entregue / ✓✓ azul quando o técnico visualizou.
+                const recibo = tec ? '' : reciboMsgU(m);
                 html += `<div class="uchat-wrap ${tec ? 'them' : 'me'}">
                     <span class="uchat-autor ${tec ? 'tec' : ''}">${tec ? '<i class="bi bi-headset"></i> ' : ''}${esc(m.autor)}</span>
-                    <div class="uchat-bubble">${esc(m.texto)}${renderAnexosEnviados(m.anexos)}<span class="uchat-time">${esc(m.data || '')}</span></div>
+                    <div class="uchat-bubble">${esc(m.texto)}${renderAnexosEnviados(m.anexos)}<span class="uchat-time">${esc(m.data || '')}${recibo}</span></div>
                 </div>`;
             });
         });
+        // Bolhas otimistas (enviando/falhou) das mensagens ainda não confirmadas no Firestore.
+        pendentesUChat.filter(p => chs.some(({ id }) => id === p.chamadoId)).forEach(p => { html += bolhaPendenteUChat(p); });
         thread.innerHTML = html;
         thread.scrollTop = thread.scrollHeight;
         renderComposerUsuario(atual, ativo);
@@ -680,19 +732,11 @@
     async function enviarMensagemUChat(chamadoId) {
         const ta = document.getElementById('uchatTexto'); const txt = (ta?.value || '').trim();
         if (!txt && !arquivosUChat.length) return;
-        const btn = document.getElementById('uchatBtnEnviar'); if (btn) btn.disabled = true;
-        try {
-            const anexos = arquivosUChat.length ? await subirAnexos(await auth.currentUser.getIdToken(), chamadoId, 'mensagens', arquivosUChat) : [];
-            const ref = doc(db, 'chamados', chamadoId); const sn = await getDoc(ref);
-            const agora = new Date().toLocaleString('pt-BR');
-            const novas = (sn.data().mensagens || []).map(m => ({ ...m, lido: true }));
-            const nova = { autor: perfil.nome, texto: txt || '(anexo enviado)', data: agora, lido: false };
-            if (anexos.length) nova.anexos = anexos;
-            novas.push(nova);
-            await updateDoc(ref, { mensagens: novas });
-            arquivosUChat = []; if (ta) ta.value = ''; redesenharPreviewUChat();
-        } catch (e) { console.error('[painel] falha ao enviar no chat', e); alert('Não foi possível enviar a mensagem.'); }
-        finally { if (btn) btn.disabled = false; }
+        const p = { tempId: 'tmp' + Date.now() + Math.random().toString(16).slice(2), chamadoId, texto: txt, arquivos: arquivosUChat.slice(), data: new Date().toLocaleString('pt-BR'), status: 'enviando' };
+        pendentesUChat.push(p);
+        arquivosUChat = []; if (ta) ta.value = ''; redesenharPreviewUChat();
+        renderChatUsuario();
+        await tentarEnviarPendenteU(p);
     }
     async function marcarLidasUsuario() {
         for (const { id, c } of meusChamados) {

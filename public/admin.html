@@ -230,9 +230,20 @@
         .msg-tec{color:#fff;background:var(--accent);align-self:flex-end;max-width:92%;text-align:right;padding:6px 9px;border-radius:10px 10px 2px 10px;font-size:.74rem;font-weight:500;}
         .msg-user{color:var(--text);background:var(--surface);border:1px solid var(--border);align-self:flex-start;max-width:92%;text-align:left;padding:6px 9px;border-radius:10px 10px 10px 2px;font-size:.74rem;}
         .msg-data{font-size:.58rem;opacity:.7;}
+        /* Recibo de leitura / status de envio (estilo WhatsApp) nas mensagens que o técnico enviou */
+        .msg-status{display:inline-flex;align-items:center;gap:3px;font-size:.6rem;margin-left:5px;vertical-align:baseline;}
+        .msg-status .bi{font-size:.74rem;line-height:1;}
+        .msg-status.enviada{color:rgba(255,255,255,.7);}   /* ✓ entregue, ainda não visualizada */
+        .msg-status.lida{color:#7dd3fc;}                    /* ✓✓ azul: usuário visualizou */
+        .msg-status.enviando{color:rgba(255,255,255,.7);}
+        .msg-status.falhou{color:#fecaca;font-weight:600;}
+        .msg-status.falhou a{color:#fff;text-decoration:underline;cursor:pointer;}
+        .chat-msg-wrap.pend-enviando{opacity:.6;}
+        .chat-msg-wrap.pend-falhou .msg-tec{background:#b91c1c;}
         .rastro-line{font-size:.68rem;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
         .card-actions{display:flex;flex-direction:column;gap:6px;}
         .act-row{display:flex;gap:6px;}
+        .act-row .act{flex:1;width:auto;}
         .act{border:1px solid transparent;border-radius:var(--radius-sm);padding:8px 10px;font-size:.74rem;font-weight:600;cursor:pointer;transition:.18s;width:100%;font-family:inherit;}
         .act:hover{transform:translateY(-1px);}
         .act-primary{background:var(--accent);color:#fff;box-shadow:0 6px 16px var(--accent-ring);}
@@ -821,7 +832,10 @@ function buildCardHtml(c,id){
             ${renderAnexosEnviados(c.anexos)}
             ${rastroCard}
             <div class="card-actions">
-                <button class="act act-primary" onclick="event.stopPropagation();window.abrirChat('${c.ownerUid}')"><i class="bi bi-chat-dots-fill"></i> Abrir chat</button>
+                <div class="act-row">
+                    ${(!concluido&&!resp)?`<button class="act act-fim" onclick="event.stopPropagation();window.capturar('${id}')"><i class="bi bi-hand-index-thumb"></i> Capturar chamado</button>`:''}
+                    <button class="act act-primary" onclick="event.stopPropagation();window.abrirChat('${c.ownerUid}')"><i class="bi bi-chat-dots-fill"></i> Abrir chat</button>
+                </div>
             </div>
         </div>
     </div>`;
@@ -1070,6 +1084,9 @@ window.toggleCard=(card)=>card.classList.toggle('expandido');
 // ===== CHATS (visão agregada por perfil / ownerUid) — reaproveita as mensagens de cada chamado =====
 let chatFocoUid=null;
 let arquivosChat=[];
+// Mensagens enviadas de forma otimista (aparecem na hora); guardam o estado
+// "enviando" ou "falhou" até a gravação no Firestore confirmar/ser reenviada.
+let pendentesChat=[];
 
 function nomeDoOwner(uid,fallbackChamado){
     const perfil=usuariosTodos.find(x=>x.id===uid);
@@ -1100,11 +1117,22 @@ function listaConversas(){
 }
 function totalNaoLidasChats(){return listaConversas().reduce((n,cv)=>n+cv.naoLidas,0);}
 
+// Prévia da última mensagem: mostra "📷 Foto" / "📎 Anexo" quando ela traz anexo,
+// em vez do texto-marcador "(anexo enviado)".
+function previaMensagem(m){
+    if(m.anexos&&m.anexos.length){
+        const temImg=m.anexos.some(a=>(a.tipo||'').startsWith('image/'));
+        const rotulo=temImg?'<i class="bi bi-image"></i> Foto':'<i class="bi bi-paperclip"></i> Anexo';
+        const texto=(m.texto&&m.texto!=='(anexo enviado)')?' '+esc(m.texto.slice(0,32)):'';
+        return rotulo+texto;
+    }
+    return esc((m.texto||'').slice(0,40));
+}
 function renderListaConversas(){
     const cont=document.getElementById('chatList');if(!cont)return;
     const convs=listaConversas();
     cont.innerHTML=convs.length?convs.map(cv=>{
-        const prev=cv.ultimaMsg?`${cv.ultimaMsg.autor==='Sistema'?'':esc(cv.ultimaMsg.autor)+': '}${esc((cv.ultimaMsg.texto||'').slice(0,40))}`:'Sem mensagens';
+        const prev=cv.ultimaMsg?`${cv.ultimaMsg.autor==='Sistema'?'':esc(cv.ultimaMsg.autor)+': '}${previaMensagem(cv.ultimaMsg)}`:'Sem mensagens';
         return `<div class="chat-item ${cv.uid===chatFocoUid?'ativo':''}" onclick="window.abrirChat('${cv.uid}')">
             <div class="chat-avatar">${iniciaisChat(cv.nome)}</div>
             <div class="chat-item-body">
@@ -1115,13 +1143,18 @@ function renderListaConversas(){
     }).join(''):`<div class="empty-state"><i class="bi bi-chat"></i><p>Nenhuma conversa ainda.</p></div>`;
 }
 
+// Recibo de leitura das mensagens que EU (técnico) enviei: ✓ entregue / ✓✓ azul quando o usuário visualizou.
+function reciboMsg(m){
+    const lida=m.lido===true;
+    return `<span class="msg-status ${lida?'lida':'enviada'}" title="${lida?'Visualizada':'Enviada'}"><i class="bi ${lida?'bi-check-all':'bi-check2'}"></i></span>`;
+}
 function bolhaMsgChat(m,nomeUsuario){
     if(m.autor==='Sistema')return `<div class="msg-sistema">${esc(m.texto)}${m.data?` · <small>${esc(m.data)}</small>`:''}</div>`;
     const doUsuario=(m.autor||'').trim().toLowerCase()===(nomeUsuario||'').trim().toLowerCase();
-    // Mostra sempre o autor (qual técnico respondeu / o usuário).
+    // Mostra sempre o autor (qual técnico respondeu / o usuário). O recibo só vale para as minhas mensagens.
     return `<div class="chat-msg-wrap ${doUsuario?'theirs':'mine'}">
         <span class="chat-msg-autor">${esc(m.autor)}</span>
-        <div class="${doUsuario?'msg-user':'msg-tec'}">${esc(m.texto)}${renderAnexosEnviados(m.anexos)}<br><small class="msg-data">${esc(m.data||'')}</small></div>
+        <div class="${doUsuario?'msg-user':'msg-tec'}">${esc(m.texto)}${renderAnexosEnviados(m.anexos)}<br><small class="msg-data">${esc(m.data||'')}</small>${doUsuario?'':reciboMsg(m)}</div>
     </div>`;
 }
 
@@ -1158,6 +1191,8 @@ function renderConversa(uid){
         if(ms.length)ms.forEach(m=>{html+=bolhaMsgChat(m,c.nome);});
         else html+=`<div class="msg-sistema">Nenhuma mensagem neste chamado ainda.</div>`;
     });
+    // Bolhas otimistas (enviando/falhou) das mensagens ainda não confirmadas no Firestore.
+    pendentesChat.filter(p=>chs.some(({id})=>id===p.chamadoId)).forEach(p=>{html+=bolhaPendenteChat(p);});
     const thread=document.getElementById('chatThread');
     thread.innerHTML=html;thread.scrollTop=thread.scrollHeight;
     renderComposerChat(atual,ativo);
@@ -1198,22 +1233,44 @@ function selecionarArquivosChat(fileList){
     const err=document.getElementById('chatAnexoErro');
     if(err){err.style.display=erros.length?'block':'none';err.textContent=erros.join(' ');}
 }
-async function enviarMensagemChat(chamadoId){
-    const ta=document.getElementById('chatTexto');const txt=(ta?.value||'').trim();
-    if(!txt&&!arquivosChat.length)return;
-    const btn=document.getElementById('chatBtnEnviar');if(btn)btn.disabled=true;
+// Bolha de uma mensagem otimista: mostra "enviando" (relógio) ou "não enviada" (com reenviar).
+function bolhaPendenteChat(p){
+    const anexosHtml=p.arquivos.length?`<div class="anexos-lista"><span class="anexo-item"><i class="bi bi-paperclip anexo-file-ico"></i><span class="anexo-item-nome">${p.arquivos.length} anexo(s)</span></span></div>`:'';
+    const status=p.status==='falhou'
+        ?`<span class="msg-status falhou" title="Não enviada"><i class="bi bi-exclamation-circle-fill"></i> Não enviada · <a onclick="window.reenviarPendenteChat('${p.tempId}')">reenviar</a> · <a onclick="window.descartarPendenteChat('${p.tempId}')">descartar</a></span>`
+        :`<span class="msg-status enviando" title="Enviando..."><i class="bi bi-clock"></i></span>`;
+    return `<div class="chat-msg-wrap mine pend-${p.status}">
+        <span class="chat-msg-autor">${esc(tNome)}</span>
+        <div class="msg-tec">${esc(p.texto||'(anexo)')}${anexosHtml}<br><small class="msg-data">${esc(p.data)}</small>${status}</div>
+    </div>`;
+}
+async function tentarEnviarPendente(p){
+    p.status='enviando';renderConversa(chatFocoUid);
     try{
-        const anexos=arquivosChat.length?await subirAnexos(await auth.currentUser.getIdToken(),chamadoId,'mensagens',arquivosChat):[];
-        const ref=doc(db,"chamados",chamadoId);const sn=await getDoc(ref);
+        const anexos=p.arquivos.length?await subirAnexos(await auth.currentUser.getIdToken(),p.chamadoId,'mensagens',p.arquivos):[];
+        const ref=doc(db,"chamados",p.chamadoId);const sn=await getDoc(ref);
+        const dados=sn.data();
         const agora=new Date().toLocaleString('pt-BR');
-        const novas=(sn.data().mensagens||[]).map(m=>({...m,lido:true}));
-        const nova={autor:tNome,texto:txt||'(anexo enviado)',data:agora,lido:false};
+        // Ao responder marco como lidas só as mensagens DO USUÁRIO (eu as vi); preservo o recibo das minhas.
+        const novas=(dados.mensagens||[]).map(m=>ehDoUsuario(m,dados)?{...m,lido:true}:m);
+        const nova={autor:tNome,texto:p.texto||'(anexo enviado)',data:agora,lido:false};
         if(anexos.length)nova.anexos=anexos;
         novas.push(nova);
         await updateDoc(ref,{mensagens:novas});
-        arquivosChat=[];if(ta)ta.value='';redesenharPreviewChat();
-    }catch(e){console.error('[chat] falha ao enviar',e);alert('Não foi possível enviar a mensagem.');}
-    finally{if(btn)btn.disabled=false;}
+        pendentesChat=pendentesChat.filter(x=>x!==p);   // sucesso: o snapshot traz a mensagem real
+        if(chatFocoUid)renderConversa(chatFocoUid);
+    }catch(e){console.error('[chat] falha ao enviar',e);p.status='falhou';if(chatFocoUid)renderConversa(chatFocoUid);}
+}
+window.reenviarPendenteChat=(tempId)=>{const p=pendentesChat.find(x=>x.tempId===tempId);if(p)tentarEnviarPendente(p);};
+window.descartarPendenteChat=(tempId)=>{pendentesChat=pendentesChat.filter(x=>x.tempId!==tempId);if(chatFocoUid)renderConversa(chatFocoUid);};
+async function enviarMensagemChat(chamadoId){
+    const ta=document.getElementById('chatTexto');const txt=(ta?.value||'').trim();
+    if(!txt&&!arquivosChat.length)return;
+    const p={tempId:'tmp'+Date.now()+Math.random().toString(16).slice(2),chamadoId,texto:txt,arquivos:arquivosChat.slice(),data:new Date().toLocaleString('pt-BR'),status:'enviando'};
+    pendentesChat.push(p);
+    arquivosChat=[];if(ta)ta.value='';redesenharPreviewChat();
+    renderConversa(chatFocoUid);
+    await tentarEnviarPendente(p);
 }
 async function marcarLidasDoOwner(uid){
     for(const {c,id} of chamadosDoOwner(uid)){
