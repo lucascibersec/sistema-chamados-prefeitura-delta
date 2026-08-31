@@ -834,8 +834,10 @@ function buildCardHtml(c,id){
             <div class="card-actions">
                 <div class="act-row">
                     ${(!concluido&&!resp)?`<button class="act act-fim" onclick="event.stopPropagation();window.capturar('${id}')"><i class="bi bi-hand-index-thumb"></i> Capturar chamado</button>`:''}
+                    ${(!concluido&&resp===tNome)?`<button class="act act-fim" onclick="event.stopPropagation();window.abrirModalFinalizar('${id}')"><i class="bi bi-check-circle-fill"></i> Finalizar</button>`:''}
                     <button class="act act-primary" onclick="event.stopPropagation();window.abrirChat('${c.ownerUid}')"><i class="bi bi-chat-dots-fill"></i> Abrir chat</button>
                 </div>
+                ${(!concluido&&resp===tNome)?`<button class="act act-transf" onclick="event.stopPropagation();window.abrirModalTransferir('${id}')"><i class="bi bi-arrow-left-right"></i> Transferir</button>`:''}
             </div>
         </div>
     </div>`;
