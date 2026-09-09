@@ -178,19 +178,6 @@
 
                 <div id="msgBox"></div>
 
-                <div class="link-row">
-                    <a href="#" id="linkEsqueciSenha">Esqueceu a senha?</a>
-                </div>
-
-                <div id="painelEsqueci" style="display:none;">
-                    <div class="field" style="margin-top:14px;">
-                        <label class="field-label" for="emailReset">Confirme seu e-mail de acesso</label>
-                        <input type="email" id="emailReset" class="input" placeholder="voce@email.com" autocomplete="username">
-                    </div>
-                    <button id="btnSolicitarReset" class="btn-logar">Solicitar redefinição</button>
-                    <div class="link-row"><a href="#" id="linkCancelarReset">Cancelar</a></div>
-                </div>
-
                 <div class="link-row link-row--sep">
                     Ainda não tem cadastro? <a href="cadastro.html">Criar cadastro</a>
                 </div>
@@ -225,7 +212,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -258,38 +245,6 @@
             const icon = document.getElementById('iconEye');
             if (input.type === 'password') { input.type = 'text'; icon.classList.replace('bi-eye-slash', 'bi-eye'); }
             else { input.type = 'password'; icon.classList.replace('bi-eye', 'bi-eye-slash'); }
-        };
-
-        // Esqueci a senha: abre um painel simples pra solicitar redefinição.
-        const painelEsqueci = document.getElementById('painelEsqueci');
-        document.getElementById('linkEsqueciSenha').onclick = (e) => {
-            e.preventDefault();
-            msgBox.style.display = 'none';
-            painelEsqueci.style.display = 'block';
-        };
-        document.getElementById('linkCancelarReset').onclick = (e) => {
-            e.preventDefault();
-            painelEsqueci.style.display = 'none';
-        };
-        document.getElementById('btnSolicitarReset').onclick = async () => {
-            const emailReset = document.getElementById('emailReset').value.trim();
-            if (!emailReset) { aviso('Informe o e-mail.', 'erro'); return; }
-            const btnReset = document.getElementById('btnSolicitarReset');
-            btnReset.disabled = true; btnReset.innerText = 'Enviando...';
-            try {
-                await addDoc(collection(db, 'resetSenha'), {
-                    email: emailReset,
-                    status: 'pendente',
-                    dataSolicitacao: serverTimestamp()
-                });
-                painelEsqueci.style.display = 'none';
-                aviso('Solicitação enviada! Entre em contato com o suporte de TI para agilizar a aprovação.', 'aviso');
-            } catch (e) {
-                console.error('[reset] falha ao solicitar', e);
-                aviso('Não foi possível enviar a solicitação. Tente novamente.', 'erro');
-            } finally {
-                btnReset.disabled = false; btnReset.innerText = 'Solicitar redefinição';
-            }
         };
 
         // Fonte única da verdade: reage a mudança de sessão e decide o destino.
